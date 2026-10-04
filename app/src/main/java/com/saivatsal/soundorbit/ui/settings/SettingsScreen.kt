@@ -408,14 +408,26 @@ fun SettingsScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "SoundOrbit v${BuildConfig.VERSION_NAME}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "by SaiVatsal",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = CosmicTeal
+                            )
+                        }
                         Text(
-                            text = "SoundOrbit v${BuildConfig.VERSION_NAME}",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "An offline-first, ad-free, 100% private music player built for open audio ecosystems.",
+                            text = "Developed by SaiVatsal • An offline-first, ad-free, 100% private music player built for open audio ecosystems.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.LightGray
                         )
