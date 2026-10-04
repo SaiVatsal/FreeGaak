@@ -1,5 +1,24 @@
+## SoundOrbit Local Configuration Template
+## Copy this file to `local.properties` and fill in your values.
+## `local.properties` is git-ignored and NEVER committed.
+
+# Android SDK path (automatically set by Android Studio)
+# sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+
+# Audius API (optional — defaults to open endpoints)
 AUDIUS_API_KEY=
 AUDIUS_BEARER_TOKEN=
+
+# Jamendo Client ID (optional — register at https://developer.jamendo.com/)
 JAMENDO_CLIENT_ID=
+
+# Spotify Client ID (optional — register at https://developer.spotify.com/dashboard)
 SPOTIFY_CLIENT_ID=
-CONTACT_EMAIL=
+
+# RapidAPI Deezer API Key(s) (optional — register at https://rapidapi.com/deezerdevs/api/deezer21)
+# Multiple keys can be comma-separated for automatic failover and load balancing.
+RAPIDAPI_DEEZER_KEY=your_rapidapi_deezer_key_here
+RAPIDAPI_DEEZER_KEYS=your_key_1,your_key_2,your_key_3
+
+# Contact Email for API compliance (MusicBrainz, etc.)
+CONTACT_EMAIL=dev@soundorbit.app

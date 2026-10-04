@@ -23,3 +23,8 @@
 - 2026-10-04: Completed Milestone 6: LRCLIB synchronized lyrics engine, LrcParser, hardware audio effects (Equalizer, BassBoost, Virtualizer), sleep timer, and audio settings.
 - 2026-10-04: Completed Milestones 7 & 8: WorkManager background TrackDownloadWorker with atomic file persistence, DownloadRepository, MediaLibraryService Android Auto media browsing tree, and local JSON backup/restore.
 - 2026-10-04: Completed Milestone 10: Full unit test suite (47 tests passing at 100%), verified Architecture tests, zero secrets, zero tracking, assembleDebug output (26.5 MB APK).
+- 2026-10-04: Fixed stream playback issues: configured ExoPlayer with `DefaultHttpDataSource.Factory` enabling cross-protocol redirects for decentralized content nodes (Audius/Jamendo), added `onPlayerError` listener in `CrossfadePlayer`, added error message rendering in `NowPlayingScreen`, and added `MEDIA_PLAY_FROM_SEARCH` intent filter in `AndroidManifest.xml`.
+- 2026-10-04: Implemented Deezer music source via RapidAPI (`DeezerSource`, Moshi DTO models, `SourceModule` Hilt multibinding, UI search/trending integration, `DeezerSourceTest`).
+- 2026-10-04: Full test suite verification pass: 51/51 tests passing at 100%, lint clean, debug APK built successfully.
+- 2026-10-04: SoundOrbit v1.1.0 release: Implemented RapidAPI Deezer multi-key rotation and automatic failover pool (4 keys with round-robin failover on HTTP 429/403), signed release APK with APK Signature Scheme v1, v2, and v3, configured R8 ProGuard keep rules for Moshi DTO serialization, fixed background coroutine test cleanup in `RepositoryTests`, 53/53 tests passing (100%), and generated `SoundOrbit-v1.1.0.apk` (5.1 MB).
+

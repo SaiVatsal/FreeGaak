@@ -11,14 +11,19 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.saivatsal.soundorbit.core.database.dao.DownloadDao
 import com.saivatsal.soundorbit.core.database.entity.DownloadStatus
 import com.saivatsal.soundorbit.core.model.AudioQuality
@@ -93,7 +98,18 @@ class CrossfadePlayer @Inject constructor(
     }
 
     private fun createExoPlayer(): ExoPlayer {
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setAllowCrossProtocolRedirects(true)
+            .setConnectTimeoutMs(15000)
+            .setReadTimeoutMs(20000)
+            .setUserAgent("SoundOrbit/1.0 (Linux; Android)")
+
+        val dataSourceFactory = DefaultDataSource.Factory(context, httpDataSourceFactory)
+        val mediaSourceFactory = DefaultMediaSourceFactory(context)
+            .setDataSourceFactory(dataSourceFactory)
+
         return ExoPlayer.Builder(context)
+            .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .build()
@@ -104,13 +120,14 @@ class CrossfadePlayer @Inject constructor(
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (player != activePlayer) return
                 when (playbackState) {
-                    Player.STATE_BUFFERING -> _snapshot.update { it.copy(status = PlaybackStatus.BUFFERING) }
+                    Player.STATE_BUFFERING -> _snapshot.update { it.copy(status = PlaybackStatus.BUFFERING, errorMessage = null) }
                     Player.STATE_READY -> {
                         val duration = max(0L, player.duration)
                         _snapshot.update {
                             it.copy(
                                 status = if (player.isPlaying) PlaybackStatus.PLAYING else PlaybackStatus.PAUSED,
-                                durationMs = duration
+                                durationMs = duration,
+                                errorMessage = null
                             )
                         }
                     }
@@ -128,7 +145,22 @@ class CrossfadePlayer @Inject constructor(
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 if (player != activePlayer) return
                 _snapshot.update {
-                    it.copy(status = if (isPlaying) PlaybackStatus.PLAYING else PlaybackStatus.PAUSED)
+                    it.copy(
+                        status = if (isPlaying) PlaybackStatus.PLAYING else PlaybackStatus.PAUSED,
+                        errorMessage = if (isPlaying) null else it.errorMessage
+                    )
+                }
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                if (player != activePlayer) return
+                val message = error.message ?: "Playback error (${error.errorCodeName})"
+                Log.e("CrossfadePlayer", "Playback error: $message", error)
+                _snapshot.update {
+                    it.copy(
+                        status = PlaybackStatus.ERROR,
+                        errorMessage = message
+                    )
                 }
             }
         })
@@ -157,11 +189,30 @@ class CrossfadePlayer @Inject constructor(
         activePlayer.volume = 1.0f
 
         scope.launch {
-            val streamUri = resolveTrackUri(selectedTrack)
-            val mediaItem = buildMediaItem(selectedTrack, streamUri)
-            activePlayer.setMediaItem(mediaItem)
-            activePlayer.prepare()
-            activePlayer.play()
+            try {
+                val streamUri = resolveTrackUri(selectedTrack)
+                if (streamUri.isNullOrBlank()) {
+                    _snapshot.update {
+                        it.copy(
+                            status = PlaybackStatus.ERROR,
+                            errorMessage = "Could not resolve stream URL for '${selectedTrack.title}'"
+                        )
+                    }
+                    return@launch
+                }
+                val mediaItem = buildMediaItem(selectedTrack, streamUri)
+                activePlayer.setMediaItem(mediaItem)
+                activePlayer.prepare()
+                activePlayer.play()
+            } catch (e: Exception) {
+                Log.e("CrossfadePlayer", "Failed to start playback for '${selectedTrack.title}'", e)
+                _snapshot.update {
+                    it.copy(
+                        status = PlaybackStatus.ERROR,
+                        errorMessage = e.message ?: "Failed to play track"
+                    )
+                }
+            }
         }
     }
 
@@ -374,42 +425,47 @@ class CrossfadePlayer @Inject constructor(
         standbyPlayer.volume = 0f
 
         scope.launch {
-            val streamUri = resolveTrackUri(nextTrack)
-            val mediaItem = buildMediaItem(nextTrack, streamUri)
-            standbyPlayer.setMediaItem(mediaItem)
-            standbyPlayer.prepare()
-            standbyPlayer.play()
+            try {
+                val streamUri = resolveTrackUri(nextTrack) ?: return@launch
+                val mediaItem = buildMediaItem(nextTrack, streamUri)
+                standbyPlayer.setMediaItem(mediaItem)
+                standbyPlayer.prepare()
+                standbyPlayer.play()
 
-            val steps = 20
-            val interval = max(10L, fadeDurationMs / steps)
-            for (i in 1..steps) {
-                val progress = i.toFloat() / steps
-                activePlayer.volume = 1f - progress
-                standbyPlayer.volume = progress
-                delay(interval)
+                val steps = 20
+                val interval = max(10L, fadeDurationMs / steps)
+                for (i in 1..steps) {
+                    val progress = i.toFloat() / steps
+                    activePlayer.volume = 1f - progress
+                    standbyPlayer.volume = progress
+                    delay(interval)
+                }
+
+                activePlayer.stop()
+                activePlayer.volume = 1.0f
+
+                // Swap players
+                val temp = activePlayer
+                activePlayer = standbyPlayer
+                standbyPlayer = temp
+
+                _snapshot.update {
+                    it.copy(
+                        currentTrack = nextTrack,
+                        queueIndex = nextIndex,
+                        positionMs = 0L,
+                        durationMs = nextTrack.durationMs
+                    )
+                }
+            } catch (e: Exception) {
+                Log.w("CrossfadePlayer", "Failed crossfade to ${nextTrack.title}", e)
+            } finally {
+                isCrossfading = false
             }
-
-            activePlayer.stop()
-            activePlayer.volume = 1.0f
-
-            // Swap players
-            val temp = activePlayer
-            activePlayer = standbyPlayer
-            standbyPlayer = temp
-
-            _snapshot.update {
-                it.copy(
-                    currentTrack = nextTrack,
-                    queueIndex = nextIndex,
-                    positionMs = 0L,
-                    durationMs = nextTrack.durationMs
-                )
-            }
-            isCrossfading = false
         }
     }
 
-    private suspend fun resolveTrackUri(track: Track): String {
+    private suspend fun resolveTrackUri(track: Track): String? {
         try {
             val download = downloadDao.getDownload(track.compositeKey)
             if (download?.status == DownloadStatus.COMPLETED && !download.localFilePath.isNullOrBlank()) {
@@ -418,19 +474,26 @@ class CrossfadePlayer @Inject constructor(
                     return android.net.Uri.fromFile(file).toString()
                 }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            Log.w("CrossfadePlayer", "Failed to check download for ${track.compositeKey}", e)
+        }
 
-        val streamResult = sourceRegistry.getSource(track.sourceId)?.resolveStream(track.sourceTrackId, AudioQuality.HIGH)
-        return (streamResult as? SourceResult.Success)?.value?.uri
-            ?: when (track.sourceId) {
-                SourceId.LOCAL -> {
-                    ContentUris.withAppendedId(
-                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        track.sourceTrackId.toLongOrNull() ?: 0L
-                    ).toString()
-                }
-                else -> track.sourceTrackId
+        val source = sourceRegistry.getSource(track.sourceId)
+        val streamResult = source?.resolveStream(track.sourceTrackId, AudioQuality.HIGH)
+        val uri = (streamResult as? SourceResult.Success)?.value?.uri
+        if (!uri.isNullOrBlank()) {
+            return uri
+        }
+
+        return when (track.sourceId) {
+            SourceId.LOCAL -> {
+                ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    track.sourceTrackId.toLongOrNull() ?: 0L
+                ).toString()
             }
+            else -> null
+        }
     }
 
     private suspend fun smoothFadeVolume(player: ExoPlayer, from: Float, to: Float, durationMs: Long) {

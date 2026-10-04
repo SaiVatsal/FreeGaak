@@ -278,6 +278,16 @@ fun NowPlayingScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         SourceBadge(sourceId = track.sourceId)
                     }
+                    if (playerState.status == PlaybackStatus.ERROR && !playerState.errorMessage.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = playerState.errorMessage ?: "Playback failed",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
 
                 IconButton(onClick = { viewModel.toggleFavorite() }) {

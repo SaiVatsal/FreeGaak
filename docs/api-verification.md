@@ -60,3 +60,21 @@ Verified on: 2026-04-10
 - **Status:** Optional source, disabled by default. Off until `SPOTIFY_CLIENT_ID` is set in `local.properties`.
 - **Auth:** PKCE OAuth flow for Web API browse/search. Spotify Android App Remote SDK for playback.
 - **Limits:** Requires Spotify Premium, installed Spotify app, max 5 allowlisted users in developer mode.
+
+## 6. Deezer API (via RapidAPI)
+- **Docs URL:** `https://rapidapi.com/deezerdevs/api/deezerdevs-deezer` / `https://developers.deezer.com/api`
+- **Base URL:** `https://deezerdevs-deezer.p.rapidapi.com`
+- **Auth:** `x-rapidapi-key` and `x-rapidapi-host` headers. Key provided in `local.properties` as `RAPIDAPI_DEEZER_KEY`.
+- **Key Endpoints:**
+  - Search tracks: `GET /search?q={query}&index={i}&limit={l}`
+  - Search artists: `GET /search/artist?q={query}&index={i}&limit={l}`
+  - Search albums: `GET /search/album?q={query}&index={i}&limit={l}`
+  - Search playlists: `GET /search/playlist?q={query}&index={i}&limit={l}`
+  - Top charts / Trending: `GET /chart/0/tracks` (with fallback to `GET /chart`)
+  - Track details: `GET /track/{id}` (contains 30-second MP3 `preview` stream URL)
+  - Artist details & top tracks: `GET /artist/{id}`, `GET /artist/{id}/top?limit=20`, `GET /artist/{id}/albums?limit=20`
+  - Album details: `GET /album/{id}`
+  - Playlist details: `GET /playlist/{id}`
+- **Rate Limits:** RapidAPI rate-limited with 429 response handling and `Retry-After` header parsing. App throttles via `RateLimiter(minIntervalMs = 300L)`.
+- **Stream Playback:** 30-second high quality MP3 preview stream playback supported. Downloads disabled (`allowsDownloads = false`).
+- **Status:** Active.

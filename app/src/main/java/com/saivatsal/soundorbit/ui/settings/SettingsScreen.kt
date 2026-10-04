@@ -294,6 +294,20 @@ fun SettingsScreen(
                             color = DarkSurfaceVariant
                         )
 
+                        // Deezer Source
+                        SettingsToggleRow(
+                            title = "Deezer Music",
+                            subtitle = "Stream music previews and discover tracks via RapidAPI Deezer",
+                            icon = Icons.Default.Album,
+                            checked = settings.enabledSources.contains(SourceId.DEEZER),
+                            onCheckedChange = { viewModel.toggleSource(SourceId.DEEZER) }
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = DarkSurfaceVariant
+                        )
+
                         // Local Files Source
                         SettingsToggleRow(
                             title = "Local Device Media",

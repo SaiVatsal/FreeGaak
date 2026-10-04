@@ -47,10 +47,14 @@ class TrackDownloadWorker(
         val title = inputData.getString(KEY_TITLE) ?: "Track"
         val artist = inputData.getString(KEY_ARTIST) ?: "Unknown Artist"
 
-        val entryPoint = EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            DownloadWorkerEntryPoint::class.java
-        )
+        val entryPoint = try {
+            EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                DownloadWorkerEntryPoint::class.java
+            )
+        } catch (_: Exception) {
+            return@withContext Result.failure()
+        }
         val downloadDao = entryPoint.downloadDao()
         val sourceRegistry = entryPoint.sourceRegistry()
         val okHttpClient = entryPoint.okHttpClient()

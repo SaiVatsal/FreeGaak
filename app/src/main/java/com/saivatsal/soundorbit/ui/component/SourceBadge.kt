@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.saivatsal.soundorbit.core.model.SourceId
 import com.saivatsal.soundorbit.ui.theme.AudiusPurple
+import com.saivatsal.soundorbit.ui.theme.DeezerOrange
 import com.saivatsal.soundorbit.ui.theme.JamendoPink
 import com.saivatsal.soundorbit.ui.theme.LocalGreen
 import com.saivatsal.soundorbit.ui.theme.SpotifyGreen
@@ -29,6 +30,7 @@ fun SourceBadge(
         SourceId.JAMENDO -> JamendoPink.copy(alpha = 0.2f) to JamendoPink
         SourceId.LOCAL -> LocalGreen.copy(alpha = 0.2f) to LocalGreen
         SourceId.SPOTIFY -> SpotifyGreen.copy(alpha = 0.2f) to SpotifyGreen
+        SourceId.DEEZER -> DeezerOrange.copy(alpha = 0.2f) to DeezerOrange
     }
 
     Box(

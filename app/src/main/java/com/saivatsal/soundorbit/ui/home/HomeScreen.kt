@@ -93,7 +93,7 @@ fun HomeScreen(
                 favoritesCount = favorites.size,
                 historyCount = recentlyPlayed.size,
                 onPlayDailyMix = {
-                    val mixTracks = (favorites + recentlyPlayed + feedState.audiusTrending + feedState.jamendoTrending)
+                    val mixTracks = (favorites + recentlyPlayed + feedState.deezerTrending + feedState.audiusTrending + feedState.jamendoTrending)
                         .distinctBy { it.compositeKey }
                         .shuffled()
                         .take(25)
@@ -188,6 +188,26 @@ fun HomeScreen(
                             TrackCard(
                                 track = track,
                                 onClick = { viewModel.playTrackList(feedState.audiusTrending, index) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+
+            // Deezer Trending Carousel
+            if (feedState.deezerTrending.isNotEmpty()) {
+                item {
+                    SectionHeader(title = "Top Charts on Deezer", icon = Icons.Default.Album)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        itemsIndexed(feedState.deezerTrending) { index, track ->
+                            TrackCard(
+                                track = track,
+                                onClick = { viewModel.playTrackList(feedState.deezerTrending, index) }
                             )
                         }
                     }

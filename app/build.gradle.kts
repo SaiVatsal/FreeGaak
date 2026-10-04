@@ -30,8 +30,8 @@ android {
         applicationId = "com.saivatsal.soundorbit"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "com.saivatsal.soundorbit.HiltTestRunner"
 
@@ -39,6 +39,8 @@ android {
         buildConfigField("String", "AUDIUS_BEARER_TOKEN", "\"${localProp("AUDIUS_BEARER_TOKEN")}\"")
         buildConfigField("String", "JAMENDO_CLIENT_ID", "\"${localProp("JAMENDO_CLIENT_ID")}\"")
         buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"${localProp("SPOTIFY_CLIENT_ID")}\"")
+        buildConfigField("String", "RAPIDAPI_DEEZER_KEY", "\"${localProp("RAPIDAPI_DEEZER_KEY")}\"")
+        buildConfigField("String", "RAPIDAPI_DEEZER_KEYS", "\"${localProp("RAPIDAPI_DEEZER_KEYS").ifEmpty { localProp("RAPIDAPI_DEEZER_KEY") }}\"")
         buildConfigField("String", "CONTACT_EMAIL", "\"${localProp("CONTACT_EMAIL")}\"")
     }
 
@@ -49,6 +51,10 @@ android {
                 storePassword = keystoreProps["storePassword"] as String
                 keyAlias = keystoreProps["keyAlias"] as String
                 keyPassword = keystoreProps["keyPassword"] as String
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+                enableV4Signing = false
             }
         }
     }

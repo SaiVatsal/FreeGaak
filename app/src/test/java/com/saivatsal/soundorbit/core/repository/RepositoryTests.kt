@@ -130,6 +130,7 @@ class RepositoryTests {
             val list = awaitItem()
             assertThat(list).hasSize(1)
             assertThat(list[0].title).isEqualTo("Track One")
+            cancelAndIgnoreRemainingEvents()
         }
 
         favoritesRepo.toggleFavorite(track1)
@@ -148,6 +149,7 @@ class RepositoryTests {
             assertThat(tracks).hasSize(2)
             assertThat(tracks[0].title).isEqualTo("Track One")
             assertThat(tracks[1].title).isEqualTo("Track Two")
+            cancelAndIgnoreRemainingEvents()
         }
 
         playlistRepo.removeTrackFromPlaylist(playlistId, "AUDIUS_track_1")
@@ -156,6 +158,7 @@ class RepositoryTests {
             val tracks = awaitItem()
             assertThat(tracks).hasSize(1)
             assertThat(tracks[0].title).isEqualTo("Track Two")
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -174,6 +177,7 @@ class RepositoryTests {
             assertThat(summary.topArtists).contains("Artist Alpha")
             assertThat(summary.heavyRotationTracks).isNotEmpty()
             assertThat(summary.dailyMixTracks).isNotEmpty()
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -183,7 +187,7 @@ class RepositoryTests {
             val mix = awaitItem()
             assertThat(mix).isNotEmpty()
             assertThat(mix.map { it.title }).contains("Track One")
-            awaitComplete()
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -205,6 +209,7 @@ class RepositoryTests {
             assertThat(download).isNotNull()
             assertThat(download?.progress).isEqualTo(50)
             assertThat(download?.status).isEqualTo(com.saivatsal.soundorbit.core.database.entity.DownloadStatus.DOWNLOADING)
+            cancelAndIgnoreRemainingEvents()
         }
 
         val testFilePath = "/data/user/0/com.saivatsal.soundorbit/files/downloads/track_1.mp3"
@@ -215,6 +220,7 @@ class RepositoryTests {
             val tracks = awaitItem()
             assertThat(tracks).hasSize(1)
             assertThat(tracks[0].title).isEqualTo("Track One")
+            cancelAndIgnoreRemainingEvents()
         }
 
         downloadRepo.deleteDownload(track1.compositeKey)

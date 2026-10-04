@@ -7,6 +7,8 @@
 .idea/
 .DS_Store
 build/
+build_out/
+app/build_out/
 /captures
 .externalNativeBuild
 .cxx
@@ -16,3 +18,4 @@ keystore.properties
 *.aab
 /docs/reports/
 /schemas/
+.kotlin/

@@ -4,7 +4,8 @@ enum class SourceId {
     AUDIUS,
     JAMENDO,
     LOCAL,
-    SPOTIFY
+    SPOTIFY,
+    DEEZER
 }
 
 data class Track(

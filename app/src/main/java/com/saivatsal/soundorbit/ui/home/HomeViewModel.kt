@@ -23,6 +23,7 @@ data class HomeFeedState(
     val isRefreshing: Boolean = false,
     val audiusTrending: List<Track> = emptyList(),
     val jamendoTrending: List<Track> = emptyList(),
+    val deezerTrending: List<Track> = emptyList(),
     val localRecent: List<Track> = emptyList(),
     val errorMessage: String? = null
 )
@@ -77,6 +78,11 @@ class HomeViewModel @Inject constructor(
                     jamendo?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
+                val deezerDeferred = async {
+                    val deezer = sourceRegistry.getSource(SourceId.DEEZER)
+                    deezer?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
                 val localDeferred = async {
                     val local = sourceRegistry.getSource(SourceId.LOCAL)
                     local?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
@@ -84,6 +90,7 @@ class HomeViewModel @Inject constructor(
 
                 val audiusTracks = audiusDeferred.await()
                 val jamendoTracks = jamendoDeferred.await()
+                val deezerTracks = deezerDeferred.await()
                 val localTracks = localDeferred.await()
 
                 _feedState.update {
@@ -92,6 +99,7 @@ class HomeViewModel @Inject constructor(
                         isRefreshing = false,
                         audiusTrending = audiusTracks,
                         jamendoTrending = jamendoTracks,
+                        deezerTrending = deezerTracks,
                         localRecent = localTracks
                     )
                 }

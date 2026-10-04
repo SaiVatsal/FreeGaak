@@ -2,6 +2,7 @@ package com.saivatsal.soundorbit.core.di
 
 import com.saivatsal.soundorbit.core.source.MusicSource
 import com.saivatsal.soundorbit.core.source.audius.AudiusSource
+import com.saivatsal.soundorbit.core.source.deezer.DeezerSource
 import com.saivatsal.soundorbit.core.source.jamendo.JamendoSource
 import com.saivatsal.soundorbit.core.source.local.LocalFilesSource
 import dagger.Binds
@@ -29,4 +30,8 @@ abstract class SourceModule {
     @Binds
     @IntoSet
     abstract fun bindJamendoSource(source: JamendoSource): MusicSource
+
+    @Binds
+    @IntoSet
+    abstract fun bindDeezerSource(source: DeezerSource): MusicSource
 }

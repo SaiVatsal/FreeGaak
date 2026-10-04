@@ -17,12 +17,15 @@
 -dontwarn retrofit2.KotlinExtensions
 -dontwarn retrofit2.KotlinExtensions$*
 
-# Keep Moshi adapters
+# Keep Moshi adapters and models
 -keepclassmembers class * {
     @com.squareup.moshi.FromJson *;
     @com.squareup.moshi.ToJson *;
 }
 -keep class * extends com.squareup.moshi.JsonAdapter
+-keep @com.squareup.moshi.JsonClass class * { *; }
+-keep class com.saivatsal.soundorbit.core.source.**.model.** { *; }
+-keep class com.saivatsal.soundorbit.core.source.**.dto.** { *; }
 
 # Keep Room entities
 -keep class com.saivatsal.soundorbit.core.database.entity.** { *; }
