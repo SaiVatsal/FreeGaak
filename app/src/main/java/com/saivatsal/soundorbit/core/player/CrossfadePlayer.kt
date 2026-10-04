@@ -42,7 +42,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.sin
 
 @OptIn(UnstableApi::class)
 @Singleton
@@ -91,12 +93,15 @@ class CrossfadePlayer @Inject constructor(
         val mediaSourceFactory = DefaultMediaSourceFactory(context)
             .setDataSourceFactory(dataSourceFactory)
 
-        return ExoPlayer.Builder(context)
+        val player = ExoPlayer.Builder(context)
             .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
+
+        player.skipSilenceEnabled = true
+        return player
     }
 
     private fun startPlaybackService() {
@@ -426,12 +431,15 @@ class CrossfadePlayer @Inject constructor(
                 standbyPlayer.prepare()
                 standbyPlayer.play()
 
-                val steps = 20
+                val steps = 24
                 val interval = max(10L, fadeDurationMs / steps)
+                val halfPi = Math.PI / 2.0
                 for (i in 1..steps) {
-                    val progress = i.toFloat() / steps
-                    activePlayer.volume = 1f - progress
-                    standbyPlayer.volume = progress
+                    val progress = i.toDouble() / steps
+                    val outgoingVol = cos(progress * halfPi).toFloat()
+                    val incomingVol = sin(progress * halfPi).toFloat()
+                    activePlayer.volume = outgoingVol
+                    standbyPlayer.volume = incomingVol
                     delay(interval)
                 }
 

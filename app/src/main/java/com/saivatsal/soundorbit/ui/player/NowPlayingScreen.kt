@@ -1,6 +1,8 @@
 package com.saivatsal.soundorbit.ui.player
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -17,6 +19,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +30,7 @@ import com.saivatsal.soundorbit.core.player.PlaybackStatus
 import com.saivatsal.soundorbit.core.player.RepeatState
 import com.saivatsal.soundorbit.ui.component.*
 import com.saivatsal.soundorbit.ui.theme.*
+import com.saivatsal.soundorbit.ui.util.PaletteHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +69,19 @@ fun NowPlayingScreen(
         return
     }
 
+    val context = LocalContext.current
+    var dominantColor by remember { mutableStateOf(EmeraldGreenBright) }
+
+    LaunchedEffect(track.artworkUrl) {
+        dominantColor = PaletteHelper.extractAccentColor(context, track.artworkUrl)
+    }
+
+    val animatedAccent by animateColorAsState(
+        targetValue = dominantColor,
+        animationSpec = tween(durationMillis = 600),
+        label = "dynamicAccent"
+    )
+
     val currentPosition = if (isUserSeeking) {
         (seekSliderPosition * playerState.durationMs).toLong()
     } else {
@@ -77,7 +94,8 @@ fun NowPlayingScreen(
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
-            DarkSurfaceVariant,
+            animatedAccent.copy(alpha = 0.28f),
+            DarkSurfaceVariant.copy(alpha = 0.85f),
             ObsidianBlack,
             OledBlack
         )
@@ -127,7 +145,7 @@ fun NowPlayingScreen(
                         text = track.sourceId.name,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = EmeraldGreenBright
+                        color = animatedAccent
                     )
                 }
 
@@ -136,7 +154,7 @@ fun NowPlayingScreen(
                         Icon(
                             imageVector = Icons.Default.Bedtime,
                             contentDescription = "Sleep Timer",
-                            tint = if (sleepTimerState.isActive) EmeraldGreenBright else Color.White,
+                            tint = if (sleepTimerState.isActive) animatedAccent else Color.White,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -177,7 +195,7 @@ fun NowPlayingScreen(
                                         modifier = Modifier.fillMaxSize(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CircularProgressIndicator(color = EmeraldGreenBright)
+                                        CircularProgressIndicator(color = animatedAccent)
                                     }
                                 }
                                 is LyricsUiState.Success -> {
@@ -238,7 +256,7 @@ fun NowPlayingScreen(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .shadow(elevation = 24.dp, shape = RoundedCornerShape(24.dp), ambientColor = EmeraldGreenBright)
+                                    .shadow(elevation = 24.dp, shape = RoundedCornerShape(24.dp), ambientColor = animatedAccent, spotColor = animatedAccent)
                                     .clip(RoundedCornerShape(24.dp))
                                     .background(DarkSurfaceVariant)
                                     .border(1.dp, DarkBorderSubtle, RoundedCornerShape(24.dp))
@@ -294,7 +312,7 @@ fun NowPlayingScreen(
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) EmeraldGreenBright else Color.White,
+                        tint = if (isFavorite) animatedAccent else Color.White,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -316,8 +334,8 @@ fun NowPlayingScreen(
                         isUserSeeking = false
                     },
                     colors = SliderDefaults.colors(
-                        thumbColor = EmeraldGreenBright,
-                        activeTrackColor = EmeraldGreenBright,
+                        thumbColor = animatedAccent,
+                        activeTrackColor = animatedAccent,
                         inactiveTrackColor = DarkSurfaceVariant
                     ),
                     modifier = Modifier.fillMaxWidth()
@@ -353,7 +371,7 @@ fun NowPlayingScreen(
                     Icon(
                         imageVector = Icons.Default.Shuffle,
                         contentDescription = "Shuffle",
-                        tint = if (playerState.isShuffle) EmeraldGreenBright else Color.LightGray,
+                        tint = if (playerState.isShuffle) animatedAccent else Color.LightGray,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -378,8 +396,8 @@ fun NowPlayingScreen(
                     modifier = Modifier
                         .size(68.dp)
                         .clip(CircleShape)
-                        .background(EmeraldGreenBright)
-                        .shadow(elevation = 12.dp, shape = CircleShape, ambientColor = EmeraldGreenBright),
+                        .background(animatedAccent)
+                        .shadow(elevation = 12.dp, shape = CircleShape, ambientColor = animatedAccent),
                     contentAlignment = Alignment.Center
                 ) {
                     IconButton(
@@ -433,7 +451,7 @@ fun NowPlayingScreen(
                     }
                     val tint = when (playerState.repeatState) {
                         RepeatState.OFF -> Color.LightGray
-                        else -> EmeraldGreenBright
+                        else -> animatedAccent
                     }
                     Icon(
                         imageVector = icon,

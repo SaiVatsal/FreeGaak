@@ -4,26 +4,72 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:scaleX="0.75"
-        android:scaleY="0.75"
-        android:translateX="13.5"
-        android:translateY="13.5">
-        <!-- Central Sphere -->
-        <path
-            android:fillColor="#00BFA5"
-            android:pathData="M54,42 A12,12 0 1,0 54,66 A12,12 0 1,0 54,42 Z" />
-        <!-- Orbit Ellipse 1 -->
-        <path
-            android:strokeColor="#00BFA5"
-            android:strokeWidth="4"
-            android:fillColor="#00000000"
-            android:pathData="M18,54 C18,34 90,34 90,54 C90,74 18,74 18,54 Z" />
-        <!-- Orbit Ellipse 2 (Angled) -->
-        <path
-            android:strokeColor="#FF6B6B"
-            android:strokeWidth="3"
-            android:fillColor="#00000000"
-            android:pathData="M24,32 C48,22 84,76 84,76 C60,86 24,32 24,32 Z" />
-    </group>
+
+    <!-- Outer Ambient Glow -->
+    <path
+        android:fillColor="#1500DF81"
+        android:pathData="M54,20 A34,34 0 1,0 54,88 A34,34 0 1,0 54,20 Z" />
+
+    <!-- Vinyl Disc Body -->
+    <path
+        android:fillColor="#12181E"
+        android:strokeColor="#1F2937"
+        android:strokeWidth="1.5"
+        android:pathData="M54,28 A26,26 0 1,0 54,80 A26,26 0 1,0 54,28 Z" />
+
+    <!-- Vinyl Groove Inner Ring 1 -->
+    <path
+        android:strokeColor="#24342F"
+        android:strokeWidth="1"
+        android:fillColor="#00000000"
+        android:pathData="M54,34 A20,20 0 1,0 54,74 A20,20 0 1,0 54,34 Z" />
+
+    <!-- Vinyl Groove Inner Ring 2 -->
+    <path
+        android:strokeColor="#18362B"
+        android:strokeWidth="1"
+        android:fillColor="#00000000"
+        android:pathData="M54,40 A14,14 0 1,0 54,68 A14,14 0 1,0 54,40 Z" />
+
+    <!-- Central Vinyl Disc Label -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M54,46 A8,8 0 1,0 54,62 A8,8 0 1,0 54,46 Z" />
+
+    <!-- Center Spindle Hole -->
+    <path
+        android:fillColor="#0B0D13"
+        android:pathData="M54,51.5 A2.5,2.5 0 1,0 54,56.5 A2.5,2.5 0 1,0 54,51.5 Z" />
+
+    <!-- Main Sound Orbit Ellipse 1 (Tilted 3D Ring) -->
+    <path
+        android:strokeColor="#00DF81"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M24,68 C22,46 44,24 72,28 C86,30 92,44 84,60 C76,76 46,84 28,74" />
+
+    <!-- Secondary Harmonic Orbit Ring (Subtle Glow) -->
+    <path
+        android:strokeColor="#6600F59B"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M80,36 C88,48 80,68 62,78 C44,88 28,84 26,72" />
+
+    <!-- Orbiting Satellite Node 1 (Bright Emerald) -->
+    <path
+        android:fillColor="#00F59B"
+        android:pathData="M78,26 A3.5,3.5 0 1,0 78,33 A3.5,3.5 0 1,0 78,26 Z" />
+
+    <!-- Orbiting Satellite Node 2 (Cyan-Emerald accent) -->
+    <path
+        android:fillColor="#34D399"
+        android:pathData="M26,70 A2.5,2.5 0 1,0 26,75 A2.5,2.5 0 1,0 26,70 Z" />
+
+    <!-- Top Left Accent Star Sparkle -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M32,26 L33.5,30 L37.5,31.5 L33.5,33 L32,37 L30.5,33 L26.5,31.5 L30.5,30 Z" />
+
 </vector>

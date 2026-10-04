@@ -19,3 +19,4 @@ keystore.properties
 /docs/reports/
 /schemas/
 .kotlin/
+.gradle-cache/
