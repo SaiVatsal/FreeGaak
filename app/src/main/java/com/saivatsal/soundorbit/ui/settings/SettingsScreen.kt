@@ -31,6 +31,7 @@ import com.saivatsal.soundorbit.core.model.SourceId
 import com.saivatsal.soundorbit.ui.theme.CosmicTeal
 import com.saivatsal.soundorbit.ui.theme.DarkSurface
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.OledBlack
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -434,14 +435,14 @@ fun SettingsScreen(
                                 color = Color.White
                             )
                             Text(
-                                text = "by SaiVatsal",
+                                text = "by Grindokuu",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = CosmicTeal
+                                color = EmeraldGreenBright
                             )
                         }
                         Text(
-                            text = "Developed by SaiVatsal • An offline-first, ad-free, 100% private music player built for open audio ecosystems.",
+                            text = "Developed by Grindokuu • An offline-first, ad-free, 100% private music player built for open audio ecosystems.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.LightGray
                         )

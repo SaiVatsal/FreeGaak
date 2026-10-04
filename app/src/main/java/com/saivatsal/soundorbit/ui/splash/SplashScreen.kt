@@ -42,6 +42,7 @@ import androidx.media3.ui.PlayerView
 import com.saivatsal.soundorbit.R
 import com.saivatsal.soundorbit.ui.theme.CosmicTeal
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.NebulaCoral
 import com.saivatsal.soundorbit.ui.theme.OledBlack
 import kotlinx.coroutines.delay
@@ -272,7 +273,7 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Developer Credit Badge: "Developed by SaiVatsal"
+            // Developer Credit Badge: "Developed by Grindokuu"
             Surface(
                 color = DarkSurfaceVariant.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(24.dp),
@@ -281,8 +282,8 @@ fun SplashScreen(
                         width = 1.dp,
                         brush = Brush.horizontalGradient(
                             listOf(
-                                CosmicTeal.copy(alpha = 0.6f),
-                                NebulaCoral.copy(alpha = 0.4f)
+                                EmeraldGreenBright.copy(alpha = 0.7f),
+                                CosmicTeal.copy(alpha = 0.4f)
                             )
                         ),
                         shape = RoundedCornerShape(24.dp)
@@ -296,7 +297,7 @@ fun SplashScreen(
                     Icon(
                         imageVector = Icons.Default.Code,
                         contentDescription = null,
-                        tint = CosmicTeal,
+                        tint = EmeraldGreenBright,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -306,10 +307,10 @@ fun SplashScreen(
                         color = Color.LightGray
                     )
                     Text(
-                        text = "SaiVatsal",
+                        text = "Grindokuu",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = CosmicTeal
+                        color = EmeraldGreenBright
                     )
                 }
             }

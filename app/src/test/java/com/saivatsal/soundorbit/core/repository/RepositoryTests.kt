@@ -91,15 +91,21 @@ class RepositoryTests {
     @Before
     fun setup() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        val directExecutor = java.util.concurrent.Executor { it.run() }
         try {
             androidx.work.WorkManager.initialize(
                 context,
-                androidx.work.Configuration.Builder().build()
+                androidx.work.Configuration.Builder()
+                    .setExecutor(directExecutor)
+                    .setTaskExecutor(directExecutor)
+                    .build()
             )
         } catch (_: Exception) {}
 
         db = Room.inMemoryDatabaseBuilder(context, SoundOrbitDatabase::class.java)
             .allowMainThreadQueries()
+            .setQueryExecutor(directExecutor)
+            .setTransactionExecutor(directExecutor)
             .build()
 
         favoritesRepo = FavoritesRepositoryImpl(db.favoriteDao(), db.trackDao())
@@ -117,8 +123,7 @@ class RepositoryTests {
 
     @After
     fun teardown() {
-        // In-memory Room database is automatically released with test garbage collection.
-        // Closing explicitly can race with active Robolectric InvalidationTracker threads.
+        db.close()
     }
 
     @Test
