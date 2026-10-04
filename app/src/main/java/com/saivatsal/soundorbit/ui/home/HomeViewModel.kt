@@ -23,6 +23,10 @@ data class HomeFeedState(
     val isRefreshing: Boolean = false,
     val selectedLanguage: String = "all",
     val regionalTrending: List<Track> = emptyList(),
+    val latestReleases: List<Track> = emptyList(),
+    val teluguTrending: List<Track> = emptyList(),
+    val hindiTrending: List<Track> = emptyList(),
+    val koreanTrending: List<Track> = emptyList(),
     val spotifyGlobalTrending: List<Track> = emptyList(),
     val spotifyIndiaTrending: List<Track> = emptyList(),
     val deezerTrending: List<Track> = emptyList(),
@@ -107,41 +111,66 @@ class HomeViewModel @Inject constructor(
             _feedState.update { it.copy(isLoading = !isRefresh, isRefreshing = isRefresh, errorMessage = null) }
 
             try {
+                val deezer = sourceRegistry.getSource(SourceId.DEEZER)
+                val spotify = sourceRegistry.getSource(SourceId.SPOTIFY)
+                val audius = sourceRegistry.getSource(SourceId.AUDIUS)
+                val jamendo = sourceRegistry.getSource(SourceId.JAMENDO)
+                val local = sourceRegistry.getSource(SourceId.LOCAL)
+
+                // 1. Priority #1: Telugu Top Hits
+                val teluguDeferred = async {
+                    deezer?.trending("telugu", TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
+                // 2. Priority #2: Hindi & Bollywood Top Hits
+                val hindiDeferred = async {
+                    deezer?.trending("hindi", TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
+                // 3. Priority #3: Korean / K-Pop Hits
+                val koreanDeferred = async {
+                    deezer?.trending("korean", TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
+                // 4. Latest Releases
+                val latestDeferred = async {
+                    val deezerNew = deezer?.trending("pop", TrendingWindow.WEEK, PageRequest(0, 10))?.getOrNull()?.items ?: emptyList()
+                    val audiusNew = audius?.trending(null, TrendingWindow.WEEK, PageRequest(0, 10))?.getOrNull()?.items ?: emptyList()
+                    (deezerNew + audiusNew).distinctBy { it.compositeKey }.take(15)
+                }
+
                 val spotifyGlobalDeferred = async {
-                    val spotify = sourceRegistry.getSource(SourceId.SPOTIFY)
                     spotify?.trending(null, TrendingWindow.WEEK, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
                 val spotifyIndiaDeferred = async {
-                    val spotify = sourceRegistry.getSource(SourceId.SPOTIFY)
                     spotify?.trending("india", TrendingWindow.WEEK, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
                 val deezerDeferred = async {
-                    val deezer = sourceRegistry.getSource(SourceId.DEEZER)
                     deezer?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
                 val deezerGenreDeferred = async {
-                    val deezer = sourceRegistry.getSource(SourceId.DEEZER)
                     deezer?.trending("pop", TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
                 val audiusDeferred = async {
-                    val audius = sourceRegistry.getSource(SourceId.AUDIUS)
                     audius?.trending(null, TrendingWindow.WEEK, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
                 val jamendoDeferred = async {
-                    val jamendo = sourceRegistry.getSource(SourceId.JAMENDO)
                     jamendo?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
                 val localDeferred = async {
-                    val local = sourceRegistry.getSource(SourceId.LOCAL)
                     local?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
+                val teluguTracks = teluguDeferred.await()
+                val hindiTracks = hindiDeferred.await()
+                val koreanTracks = koreanDeferred.await()
+                val latestTracks = latestDeferred.await()
                 val spotifyGlobalTracks = spotifyGlobalDeferred.await()
                 val spotifyIndiaTracks = spotifyIndiaDeferred.await()
                 val deezerTracks = deezerDeferred.await()
@@ -154,6 +183,10 @@ class HomeViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         isRefreshing = false,
+                        teluguTrending = teluguTracks,
+                        hindiTrending = hindiTracks,
+                        koreanTrending = koreanTracks,
+                        latestReleases = latestTracks,
                         spotifyGlobalTrending = spotifyGlobalTracks,
                         spotifyIndiaTrending = spotifyIndiaTracks,
                         deezerTrending = deezerTracks,

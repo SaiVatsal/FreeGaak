@@ -10,10 +10,10 @@ import com.saivatsal.soundorbit.core.source.SourceRegistry
 import com.saivatsal.soundorbit.core.source.SourceResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Collections
 import javax.inject.Inject
 
 data class SearchUiState(
@@ -26,6 +26,14 @@ data class SearchUiState(
     val albums: List<Album> = emptyList(),
     val playlists: List<Playlist> = emptyList(),
     val errorMessage: String? = null
+)
+
+private data class CachedSearchResults(
+    val tracks: List<Track>,
+    val artists: List<Artist>,
+    val albums: List<Album>,
+    val playlists: List<Playlist>,
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 val POPULAR_GENRES = listOf(
@@ -46,14 +54,25 @@ class SearchViewModel @Inject constructor(
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
     private val queryFlow = MutableStateFlow("")
+    private var searchJob: Job? = null
+
+    // LRU In-Memory Search Cache (capacity 50 queries, 5-minute TTL)
+    private val memoryCache = Collections.synchronizedMap(
+        object : LinkedHashMap<String, CachedSearchResults>(50, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedSearchResults>?): Boolean {
+                return size > 50
+            }
+        }
+    )
 
     init {
         viewModelScope.launch {
             queryFlow
-                .debounce(350)
+                .debounce(300)
                 .distinctUntilChanged()
                 .collectLatest { query ->
                     if (query.isBlank()) {
+                        searchJob?.cancel()
                         _uiState.update {
                             it.copy(
                                 isSearching = false,
@@ -94,8 +113,33 @@ class SearchViewModel @Inject constructor(
         onQueryChange(genre)
     }
 
+    private fun getCacheKey(query: String, sourceId: SourceId?, filter: SearchFilterType): String {
+        return "${query.trim().lowercase()}#${sourceId?.name ?: "ALL"}#${filter.name}"
+    }
+
     private fun performSearch(query: String, sourceId: SourceId?, filter: SearchFilterType) {
-        viewModelScope.launch {
+        searchJob?.cancel()
+
+        val normalizedKey = getCacheKey(query, sourceId, filter)
+        val cached = memoryCache[normalizedKey]
+        val now = System.currentTimeMillis()
+
+        // Check if fresh cache exists (valid for 5 minutes)
+        if (cached != null && (now - cached.timestamp < 300_000L)) {
+            _uiState.update {
+                it.copy(
+                    isSearching = false,
+                    tracks = cached.tracks,
+                    artists = cached.artists,
+                    albums = cached.albums,
+                    playlists = cached.playlists,
+                    errorMessage = null
+                )
+            }
+            return
+        }
+
+        searchJob = viewModelScope.launch {
             _uiState.update { it.copy(isSearching = true, errorMessage = null) }
 
             val sources = if (sourceId != null) {
@@ -104,43 +148,76 @@ class SearchViewModel @Inject constructor(
                 sourceRegistry.allSources()
             }
 
-            try {
-                val results = sources.map { src ->
-                    async {
-                        src.search(query, SearchFilter(type = filter), PageRequest(0, 20))
+            val accumulatedTracks = mutableListOf<Track>()
+            val accumulatedArtists = mutableListOf<Artist>()
+            val accumulatedAlbums = mutableListOf<Album>()
+            val accumulatedPlaylists = mutableListOf<Playlist>()
+
+            // Progressive stream merging: launch each source independently and update UI incrementally
+            val sourceJobs = sources.map { src ->
+                launch {
+                    try {
+                        val result = src.search(query.trim(), SearchFilter(type = filter), PageRequest(0, 20))
+                        if (result is SourceResult.Success) {
+                            val newTracks = result.value.tracks.items
+                            val newArtists = result.value.artists.items
+                            val newAlbums = result.value.albums.items
+                            val newPlaylists = result.value.playlists.items
+
+                            synchronized(accumulatedTracks) {
+                                accumulatedTracks.addAll(newTracks)
+                                accumulatedArtists.addAll(newArtists)
+                                accumulatedAlbums.addAll(newAlbums)
+                                accumulatedPlaylists.addAll(newPlaylists)
+
+                                val distinctTracks = accumulatedTracks.distinctBy { t -> t.compositeKey }
+                                val distinctArtists = accumulatedArtists.distinctBy { a -> a.compositeKey }
+                                val distinctAlbums = accumulatedAlbums.distinctBy { al -> al.compositeKey }
+                                val distinctPlaylists = accumulatedPlaylists.distinctBy { p -> p.compositeKey }
+
+                                _uiState.update { state ->
+                                    state.copy(
+                                        tracks = distinctTracks,
+                                        artists = distinctArtists,
+                                        albums = distinctAlbums,
+                                        playlists = distinctPlaylists
+                                    )
+                                }
+                            }
+                        }
+                    } catch (_: Exception) {
+                        // Source errors are gracefully isolated so other sources continue streaming
                     }
-                }.awaitAll()
-
-                val allTracks = mutableListOf<Track>()
-                val allArtists = mutableListOf<Artist>()
-                val allAlbums = mutableListOf<Album>()
-                val allPlaylists = mutableListOf<Playlist>()
-
-                for (res in results) {
-                    if (res is SourceResult.Success) {
-                        allTracks.addAll(res.value.tracks.items)
-                        allArtists.addAll(res.value.artists.items)
-                        allAlbums.addAll(res.value.albums.items)
-                        allPlaylists.addAll(res.value.playlists.items)
-                    }
                 }
+            }
 
-                _uiState.update {
-                    it.copy(
-                        isSearching = false,
-                        tracks = allTracks.distinctBy { t -> t.compositeKey },
-                        artists = allArtists.distinctBy { a -> a.compositeKey },
-                        albums = allAlbums.distinctBy { al -> al.compositeKey },
-                        playlists = allPlaylists.distinctBy { p -> p.compositeKey }
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isSearching = false,
-                        errorMessage = e.message ?: "Search failed"
-                    )
-                }
+            sourceJobs.forEach { it.join() }
+
+            val finalTracks = accumulatedTracks.distinctBy { t -> t.compositeKey }
+            val finalArtists = accumulatedArtists.distinctBy { a -> a.compositeKey }
+            val finalAlbums = accumulatedAlbums.distinctBy { al -> al.compositeKey }
+            val finalPlaylists = accumulatedPlaylists.distinctBy { p -> p.compositeKey }
+
+            // Store in in-memory LRU cache
+            memoryCache[normalizedKey] = CachedSearchResults(
+                tracks = finalTracks,
+                artists = finalArtists,
+                albums = finalAlbums,
+                playlists = finalPlaylists,
+                timestamp = System.currentTimeMillis()
+            )
+
+            _uiState.update {
+                it.copy(
+                    isSearching = false,
+                    tracks = finalTracks,
+                    artists = finalArtists,
+                    albums = finalAlbums,
+                    playlists = finalPlaylists,
+                    errorMessage = if (finalTracks.isEmpty() && finalArtists.isEmpty() && finalAlbums.isEmpty()) {
+                        "No results found for '$query'"
+                    } else null
+                )
             }
         }
     }

@@ -55,7 +55,11 @@ interface PlaylistDao {
     """)
     fun getTracksForPlaylist(playlistId: String): Flow<List<TrackEntity>>
 
-    @Query("SELECT COUNT(*) FROM playlist_tracks WHERE playlistId = :playlistId")
+    @Query("""
+        SELECT COUNT(*) FROM playlist_tracks pt
+        INNER JOIN tracks t ON pt.trackId = t.id
+        WHERE pt.playlistId = :playlistId
+    """)
     fun getTrackCountForPlaylist(playlistId: String): Flow<Int>
 
     @Query("SELECT COALESCE(MAX(position), -1) + 1 FROM playlist_tracks WHERE playlistId = :playlistId")

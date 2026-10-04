@@ -175,7 +175,126 @@ fun HomeScreen(
             }
         }
 
-        // Quick Access 2x2 Grid
+        // Selected Regional Language Trending Carousel (if active)
+        if (feedState.selectedLanguage != "all" && feedState.regionalTrending.isNotEmpty()) {
+            item {
+                val langLabel = languageFilters.find { it.first == feedState.selectedLanguage }?.second ?: "Regional"
+                SectionHeader(
+                    title = "Trending in $langLabel",
+                    icon = Icons.Default.Whatshot,
+                    onSeeAll = { onNavigateToLanguage(feedState.selectedLanguage) }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(feedState.regionalTrending) { index, track ->
+                        TrackCard(
+                            track = track,
+                            onClick = { viewModel.playTrackList(feedState.regionalTrending, index) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        // Priority #1: Top Telugu Hits Carousel
+        if (feedState.selectedLanguage == "all" && feedState.teluguTrending.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = "Top Telugu Hits",
+                    icon = Icons.Default.Whatshot,
+                    onSeeAll = { onNavigateToLanguage("telugu") }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(feedState.teluguTrending) { index, track ->
+                        TrackCard(
+                            track = track,
+                            onClick = { viewModel.playTrackList(feedState.teluguTrending, index) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        // Priority #2: Top Bollywood & Hindi Hits Carousel
+        if (feedState.selectedLanguage == "all" && feedState.hindiTrending.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = "Bollywood & Hindi Trending",
+                    icon = Icons.Default.LocalFireDepartment,
+                    onSeeAll = { onNavigateToLanguage("hindi") }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(feedState.hindiTrending) { index, track ->
+                        TrackCard(
+                            track = track,
+                            onClick = { viewModel.playTrackList(feedState.hindiTrending, index) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        // Priority #3: Korean & K-Pop Top Hits Carousel
+        if (feedState.selectedLanguage == "all" && feedState.koreanTrending.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = "K-Pop & Korean Hits",
+                    icon = Icons.Default.Stars,
+                    onSeeAll = { onNavigateToLanguage("korean") }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(feedState.koreanTrending) { index, track ->
+                        TrackCard(
+                            track = track,
+                            onClick = { viewModel.playTrackList(feedState.koreanTrending, index) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        // Latest Releases Carousel
+        if (feedState.latestReleases.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = "Latest Releases",
+                    icon = Icons.Default.NewReleases,
+                    onSeeAll = onNavigateToExplore
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(feedState.latestReleases) { index, track ->
+                        TrackCard(
+                            track = track,
+                            onClick = { viewModel.playTrackList(feedState.latestReleases, index) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
         item {
             Column(
                 modifier = Modifier
