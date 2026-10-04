@@ -138,6 +138,17 @@ fun SearchScreen(
             }
             item {
                 FilterChip(
+                    selected = uiState.selectedSource == SourceId.SPOTIFY,
+                    onClick = { viewModel.onSourceFilterSelect(SourceId.SPOTIFY) },
+                    label = { Text("Spotify") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = CosmicTeal,
+                        selectedLabelColor = Color.Black
+                    )
+                )
+            }
+            item {
+                FilterChip(
                     selected = uiState.selectedSource == SourceId.LOCAL,
                     onClick = { viewModel.onSourceFilterSelect(SourceId.LOCAL) },
                     label = { Text("Local Audio") },

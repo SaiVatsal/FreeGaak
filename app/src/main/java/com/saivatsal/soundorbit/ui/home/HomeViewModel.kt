@@ -21,9 +21,12 @@ import javax.inject.Inject
 data class HomeFeedState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
+    val spotifyGlobalTrending: List<Track> = emptyList(),
+    val spotifyIndiaTrending: List<Track> = emptyList(),
+    val deezerTrending: List<Track> = emptyList(),
+    val deezerGenreHits: List<Track> = emptyList(),
     val audiusTrending: List<Track> = emptyList(),
     val jamendoTrending: List<Track> = emptyList(),
-    val deezerTrending: List<Track> = emptyList(),
     val localRecent: List<Track> = emptyList(),
     val errorMessage: String? = null
 )
@@ -68,6 +71,26 @@ class HomeViewModel @Inject constructor(
             _feedState.update { it.copy(isLoading = !isRefresh, isRefreshing = isRefresh, errorMessage = null) }
 
             try {
+                val spotifyGlobalDeferred = async {
+                    val spotify = sourceRegistry.getSource(SourceId.SPOTIFY)
+                    spotify?.trending(null, TrendingWindow.WEEK, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
+                val spotifyIndiaDeferred = async {
+                    val spotify = sourceRegistry.getSource(SourceId.SPOTIFY)
+                    spotify?.trending("india", TrendingWindow.WEEK, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
+                val deezerDeferred = async {
+                    val deezer = sourceRegistry.getSource(SourceId.DEEZER)
+                    deezer?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
+                val deezerGenreDeferred = async {
+                    val deezer = sourceRegistry.getSource(SourceId.DEEZER)
+                    deezer?.trending("pop", TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
                 val audiusDeferred = async {
                     val audius = sourceRegistry.getSource(SourceId.AUDIUS)
                     audius?.trending(null, TrendingWindow.WEEK, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
@@ -78,28 +101,29 @@ class HomeViewModel @Inject constructor(
                     jamendo?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
-                val deezerDeferred = async {
-                    val deezer = sourceRegistry.getSource(SourceId.DEEZER)
-                    deezer?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
-                }
-
                 val localDeferred = async {
                     val local = sourceRegistry.getSource(SourceId.LOCAL)
                     local?.trending(null, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
                 }
 
+                val spotifyGlobalTracks = spotifyGlobalDeferred.await()
+                val spotifyIndiaTracks = spotifyIndiaDeferred.await()
+                val deezerTracks = deezerDeferred.await()
+                val deezerGenreTracks = deezerGenreDeferred.await()
                 val audiusTracks = audiusDeferred.await()
                 val jamendoTracks = jamendoDeferred.await()
-                val deezerTracks = deezerDeferred.await()
                 val localTracks = localDeferred.await()
 
                 _feedState.update {
                     it.copy(
                         isLoading = false,
                         isRefreshing = false,
+                        spotifyGlobalTrending = spotifyGlobalTracks,
+                        spotifyIndiaTrending = spotifyIndiaTracks,
+                        deezerTrending = deezerTracks,
+                        deezerGenreHits = deezerGenreTracks,
                         audiusTrending = audiusTracks,
                         jamendoTrending = jamendoTracks,
-                        deezerTrending = deezerTracks,
                         localRecent = localTracks
                     )
                 }

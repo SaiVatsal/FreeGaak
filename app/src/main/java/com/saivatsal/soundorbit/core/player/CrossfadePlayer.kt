@@ -25,6 +25,7 @@ import com.saivatsal.soundorbit.core.model.SourceId
 import com.saivatsal.soundorbit.core.model.Track
 import com.saivatsal.soundorbit.core.source.SourceRegistry
 import com.saivatsal.soundorbit.core.source.SourceResult
+import com.saivatsal.soundorbit.core.source.deezer.DeezerSource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -476,6 +477,15 @@ class CrossfadePlayer @Inject constructor(
         val uri = (streamResult as? SourceResult.Success)?.value?.uri
         if (!uri.isNullOrBlank()) {
             return uri
+        }
+
+        // Cross-source fallback matching via Deezer
+        if (track.sourceId != SourceId.LOCAL) {
+            val deezer = sourceRegistry.getSource(SourceId.DEEZER) as? DeezerSource
+            val fallbackStream = deezer?.findMatchingStream(track.title, track.artistName)
+            if (!fallbackStream?.uri.isNullOrBlank()) {
+                return fallbackStream.uri
+            }
         }
 
         return when (track.sourceId) {

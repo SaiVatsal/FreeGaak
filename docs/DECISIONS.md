@@ -10,6 +10,7 @@
 | 2026-10-04 | WorkManager for Background Track Downloads | Provides guaranteed execution with network constraints and foreground service notifications | Custom foreground service or raw CoroutineScope |
 | 2026-10-04 | MediaLibraryService for Android Auto | Enables head units and external controllers to browse Favorites, Downloads, and Local files via standard MediaLibrarySession hierarchy | Simple MediaSessionService without browsable library tree |
 | 2026-10-04 | Underscore Composite Key Formatting | Standardizes Track composite key format (`${sourceId.name}_$sourceTrackId`) across Room entities and Domain models | Divergent key formats across layers |
+| 2026-10-04 | Spotify Discovery + Cross-Source Stream Resolution Engine | Leverages Spotify Web API for latest trending charts (Top 50 Global, Top 50 India, Viral 50) and resolves audio streams dynamically via Deezer high-quality 320kbps MP3 previews, Audius, and Jamendo | Spotify App Remote only (which requires Spotify Premium and installed app) |
 
 ## API conflicts or legal constraints
 

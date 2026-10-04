@@ -29,8 +29,9 @@ data class SearchUiState(
 )
 
 val POPULAR_GENRES = listOf(
-    "Electronic", "Hip-Hop", "Rock", "Pop", "Jazz", "Ambient",
-    "Indie", "Classical", "Lo-Fi", "Synthwave", "Folk", "Reggae"
+    "Bollywood", "Punjabi", "Pop", "Hip-Hop", "Dance", "EDM",
+    "Rock", "R&B", "Lo-Fi", "Latin", "K-Pop", "Electronic",
+    "Indie", "Acoustic", "Jazz", "Classical"
 )
 
 @OptIn(FlowPreview::class)

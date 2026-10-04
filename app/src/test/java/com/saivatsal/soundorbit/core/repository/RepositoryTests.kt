@@ -116,9 +116,9 @@ class RepositoryTests {
     }
 
     @After
-    @Throws(IOException::class)
     fun teardown() {
-        db.close()
+        // In-memory Room database is automatically released with test garbage collection.
+        // Closing explicitly can race with active Robolectric InvalidationTracker threads.
     }
 
     @Test

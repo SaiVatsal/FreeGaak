@@ -93,7 +93,7 @@ fun HomeScreen(
                 favoritesCount = favorites.size,
                 historyCount = recentlyPlayed.size,
                 onPlayDailyMix = {
-                    val mixTracks = (favorites + recentlyPlayed + feedState.deezerTrending + feedState.audiusTrending + feedState.jamendoTrending)
+                    val mixTracks = (favorites + recentlyPlayed + feedState.spotifyGlobalTrending + feedState.spotifyIndiaTrending + feedState.deezerTrending + feedState.audiusTrending + feedState.jamendoTrending)
                         .distinctBy { it.compositeKey }
                         .shuffled()
                         .take(25)
@@ -175,19 +175,39 @@ fun HomeScreen(
                 }
             }
         } else {
-            // Audius Trending Carousel
-            if (feedState.audiusTrending.isNotEmpty()) {
+            // Spotify Global Top 50 Carousel
+            if (feedState.spotifyGlobalTrending.isNotEmpty()) {
                 item {
-                    SectionHeader(title = "Trending on Audius", icon = Icons.Default.TrendingUp)
+                    SectionHeader(title = "Spotify Top 50 Global", icon = Icons.Default.TrendingUp)
                     Spacer(modifier = Modifier.height(8.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        itemsIndexed(feedState.audiusTrending) { index, track ->
+                        itemsIndexed(feedState.spotifyGlobalTrending) { index, track ->
                             TrackCard(
                                 track = track,
-                                onClick = { viewModel.playTrackList(feedState.audiusTrending, index) }
+                                onClick = { viewModel.playTrackList(feedState.spotifyGlobalTrending, index) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+
+            // Spotify India Top 50 & Bollywood Carousel
+            if (feedState.spotifyIndiaTrending.isNotEmpty()) {
+                item {
+                    SectionHeader(title = "Spotify Top 50 India", icon = Icons.Default.Whatshot)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        itemsIndexed(feedState.spotifyIndiaTrending) { index, track ->
+                            TrackCard(
+                                track = track,
+                                onClick = { viewModel.playTrackList(feedState.spotifyIndiaTrending, index) }
                             )
                         }
                     }
@@ -208,6 +228,46 @@ fun HomeScreen(
                             TrackCard(
                                 track = track,
                                 onClick = { viewModel.playTrackList(feedState.deezerTrending, index) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+
+            // Deezer Genre Hits (Pop & New Releases) Carousel
+            if (feedState.deezerGenreHits.isNotEmpty()) {
+                item {
+                    SectionHeader(title = "Pop & New Releases (Deezer)", icon = Icons.Default.MusicNote)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        itemsIndexed(feedState.deezerGenreHits) { index, track ->
+                            TrackCard(
+                                track = track,
+                                onClick = { viewModel.playTrackList(feedState.deezerGenreHits, index) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+
+            // Audius Trending Carousel
+            if (feedState.audiusTrending.isNotEmpty()) {
+                item {
+                    SectionHeader(title = "Trending on Audius", icon = Icons.Default.Radio)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        itemsIndexed(feedState.audiusTrending) { index, track ->
+                            TrackCard(
+                                track = track,
+                                onClick = { viewModel.playTrackList(feedState.audiusTrending, index) }
                             )
                         }
                     }

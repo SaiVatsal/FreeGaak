@@ -108,34 +108,75 @@ class DeezerSource @Inject constructor(
         window: TrendingWindow,
         page: PageRequest
     ): SourceResult<Page<Track>> = withContext(ioDispatcher) {
-        val urlBuilder = "$baseUrl/chart/0/tracks".toHttpUrlOrNull()?.newBuilder()
-            ?: return@withContext SourceResult.Failure(SourceError.Unknown(IllegalArgumentException("Invalid URL")))
-
-        urlBuilder.addQueryParameter("index", page.offset.toString())
-        urlBuilder.addQueryParameter("limit", page.limit.toString())
-
-        val result = executeGet(urlBuilder.build().toString()) { body ->
-            val response = trackListAdapter.fromJson(body)
-            val dtos = response?.data ?: emptyList()
-            val tracks = dtos.map { it.toDomainTrack() }
-            val nextOffset = if (tracks.size >= page.limit) page.offset + tracks.size else null
-            Page(tracks, nextOffset)
+        val cleanGenre = genre?.trim()?.lowercase()
+        val genreId = when (cleanGenre) {
+            "pop" -> 132
+            "hip-hop", "hiphop", "rap" -> 116
+            "dance", "electronic", "edm" -> 113
+            "rock" -> 152
+            "r&b", "rnb", "soul" -> 165
+            "jazz" -> 129
+            "alternative" -> 85
+            "reggae" -> 144
+            null, "", "all" -> 0
+            else -> null
         }
 
-        if (result is SourceResult.Success) {
-            if (result.value.items.isNotEmpty()) {
-                result
-            } else {
+        if (genreId != null) {
+            val urlBuilder = "$baseUrl/chart/$genreId/tracks".toHttpUrlOrNull()?.newBuilder()
+                ?: return@withContext SourceResult.Failure(SourceError.Unknown(IllegalArgumentException("Invalid URL")))
+
+            urlBuilder.addQueryParameter("index", page.offset.toString())
+            urlBuilder.addQueryParameter("limit", page.limit.toString())
+
+            val result = executeGet(urlBuilder.build().toString()) { body ->
+                val response = trackListAdapter.fromJson(body)
+                val dtos = response?.data ?: emptyList()
+                val tracks = dtos.map { it.toDomainTrack() }
+                val nextOffset = if (tracks.size >= page.limit) page.offset + tracks.size else null
+                Page(tracks, nextOffset)
+            }
+
+            if (result is SourceResult.Success && result.value.items.isNotEmpty()) {
+                return@withContext result
+            }
+            if (result is SourceResult.Failure) {
+                return@withContext result
+            }
+
+            if (genreId == 0) {
                 // Fallback to /chart root if chart/0/tracks is empty
-                executeGet("$baseUrl/chart") { body ->
+                return@withContext executeGet("$baseUrl/chart") { body ->
                     val chart = chartAdapter.fromJson(body)
                     val dtos = chart?.tracks?.data ?: emptyList()
                     val tracks = dtos.map { it.toDomainTrack() }
                     Page(tracks, null)
                 }
             }
-        } else {
-            result
+        }
+
+        // For named regional queries (Bollywood, Hindi, India, Punjabi, Latin, etc.)
+        val searchQuery = when (cleanGenre) {
+            "bollywood", "hindi" -> "Bollywood Top Hits"
+            "india", "punjabi" -> "India Top 50"
+            "latin" -> "Latin Hits"
+            else -> genre ?: "Top Hits"
+        }
+
+        val searchUrl = "$baseUrl/search".toHttpUrlOrNull()?.newBuilder()
+            ?.addQueryParameter("q", searchQuery)
+            ?.addQueryParameter("index", page.offset.toString())
+            ?.addQueryParameter("limit", page.limit.toString())
+            ?.build()
+            ?.toString()
+            ?: return@withContext SourceResult.Failure(SourceError.Unknown(IllegalArgumentException("Invalid URL")))
+
+        executeGet(searchUrl) { body ->
+            val response = trackListAdapter.fromJson(body)
+            val dtos = response?.data ?: emptyList()
+            val tracks = dtos.map { it.toDomainTrack() }
+            val nextOffset = if (tracks.size >= page.limit) page.offset + tracks.size else null
+            Page(tracks, nextOffset)
         }
     }
 
@@ -338,6 +379,37 @@ class DeezerSource @Inject constructor(
                 mimeType = "audio/mpeg"
             )
         }
+    }
+
+    suspend fun findMatchingStream(
+        title: String,
+        artistName: String
+    ): ResolvedStream? = withContext(ioDispatcher) {
+        val cleanTitle = title.replace(Regex("(?i)\\s*\\(feat\\..*?\\)|\\s*\\[feat\\..*?\\]|\\s*\\(with.*?\\)"), "").trim()
+        val query = "$cleanTitle $artistName".trim()
+        if (query.isBlank()) return@withContext null
+
+        val searchUrl = "$baseUrl/search".toHttpUrlOrNull()?.newBuilder()
+            ?.addQueryParameter("q", query)
+            ?.addQueryParameter("limit", "5")
+            ?.build()
+            ?.toString() ?: return@withContext null
+
+        val result = executeGet(searchUrl) { body ->
+            val response = trackListAdapter.fromJson(body)
+            response?.data ?: emptyList()
+        }
+
+        if (result is SourceResult.Success) {
+            val candidate = result.value.firstOrNull { !it.preview.isNullOrBlank() }
+            if (candidate?.preview != null) {
+                return@withContext ResolvedStream(
+                    uri = candidate.preview,
+                    mimeType = "audio/mpeg"
+                )
+            }
+        }
+        null
     }
 
     private suspend fun <T> executeGet(

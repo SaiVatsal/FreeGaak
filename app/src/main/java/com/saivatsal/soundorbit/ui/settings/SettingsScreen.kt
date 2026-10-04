@@ -308,6 +308,20 @@ fun SettingsScreen(
                             color = DarkSurfaceVariant
                         )
 
+                        // Spotify Discovery Source
+                        SettingsToggleRow(
+                            title = "Spotify Discovery",
+                            subtitle = "Explore Top 50 Global, India & Viral Charts with cross-source streaming",
+                            icon = Icons.Default.GraphicEq,
+                            checked = settings.enabledSources.contains(SourceId.SPOTIFY),
+                            onCheckedChange = { viewModel.toggleSource(SourceId.SPOTIFY) }
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = DarkSurfaceVariant
+                        )
+
                         // Local Files Source
                         SettingsToggleRow(
                             title = "Local Device Media",

@@ -5,6 +5,7 @@ import com.saivatsal.soundorbit.core.source.audius.AudiusSource
 import com.saivatsal.soundorbit.core.source.deezer.DeezerSource
 import com.saivatsal.soundorbit.core.source.jamendo.JamendoSource
 import com.saivatsal.soundorbit.core.source.local.LocalFilesSource
+import com.saivatsal.soundorbit.core.source.spotify.SpotifySource
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -34,4 +35,8 @@ abstract class SourceModule {
     @Binds
     @IntoSet
     abstract fun bindDeezerSource(source: DeezerSource): MusicSource
+
+    @Binds
+    @IntoSet
+    abstract fun bindSpotifySource(source: SpotifySource): MusicSource
 }

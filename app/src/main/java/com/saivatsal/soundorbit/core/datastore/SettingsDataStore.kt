@@ -23,7 +23,7 @@ data class UserSettings(
     val crossfadeDurationSec: Int = 0,
     val loudnessNormalization: Boolean = false,
     val offlineMode: Boolean = false,
-    val enabledSources: Set<SourceId> = setOf(SourceId.AUDIUS, SourceId.JAMENDO, SourceId.DEEZER, SourceId.LOCAL),
+    val enabledSources: Set<SourceId> = setOf(SourceId.DEEZER, SourceId.SPOTIFY, SourceId.AUDIUS, SourceId.JAMENDO, SourceId.LOCAL),
     val equalizerEnabled: Boolean = false,
     val equalizerPreset: Int = 0,
     val equalizerCustomBands: String = "",
@@ -60,7 +60,7 @@ class SettingsDataStore @Inject constructor(
                 .mapNotNull { name -> try { SourceId.valueOf(name) } catch (_: Exception) { null } }
                 .toSet()
         } else {
-            setOf(SourceId.AUDIUS, SourceId.JAMENDO, SourceId.DEEZER, SourceId.LOCAL)
+            setOf(SourceId.DEEZER, SourceId.SPOTIFY, SourceId.AUDIUS, SourceId.JAMENDO, SourceId.LOCAL)
         }
 
         UserSettings(
