@@ -1,15 +1,9 @@
 package com.saivatsal.soundorbit.core.player
 
-import android.content.BroadcastReceiver
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.media.AudioAttributes as AndroidAudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.OptIn
@@ -58,7 +52,6 @@ class CrossfadePlayer @Inject constructor(
 ) : AudioPlayer {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     private val _snapshot = MutableStateFlow(PlayerSnapshot())
     override val snapshot: StateFlow<PlayerSnapshot> = _snapshot.asStateFlow()
@@ -79,17 +72,6 @@ class CrossfadePlayer @Inject constructor(
 
     private var tickerJob: Job? = null
     private var fadeJob: Job? = null
-    private var audioFocusRequest: AudioFocusRequest? = null
-
-    private val becomingNoisyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(c: Context?, intent: Intent?) {
-            if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
-                pause()
-            }
-        }
-    }
-
-    private var isReceiverRegistered = false
 
     init {
         setupPlayerListener(playerA)
@@ -112,7 +94,17 @@ class CrossfadePlayer @Inject constructor(
             .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
+            .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
+    }
+
+    private fun startPlaybackService() {
+        try {
+            val intent = Intent(context, PlaybackService::class.java)
+            context.startService(intent)
+        } catch (e: Exception) {
+            Log.w("CrossfadePlayer", "Could not start PlaybackService", e)
+        }
     }
 
     private fun setupPlayerListener(player: ExoPlayer) {
@@ -125,7 +117,7 @@ class CrossfadePlayer @Inject constructor(
                         val duration = max(0L, player.duration)
                         _snapshot.update {
                             it.copy(
-                                status = if (player.isPlaying) PlaybackStatus.PLAYING else PlaybackStatus.PAUSED,
+                                status = if (player.playWhenReady) PlaybackStatus.PLAYING else PlaybackStatus.PAUSED,
                                 durationMs = duration,
                                 errorMessage = null
                             )
@@ -146,7 +138,15 @@ class CrossfadePlayer @Inject constructor(
                 if (player != activePlayer) return
                 _snapshot.update {
                     it.copy(
-                        status = if (isPlaying) PlaybackStatus.PLAYING else PlaybackStatus.PAUSED,
+                        status = if (isPlaying) {
+                            PlaybackStatus.PLAYING
+                        } else if (player.playbackState == Player.STATE_BUFFERING) {
+                            PlaybackStatus.BUFFERING
+                        } else if (player.playWhenReady && player.playbackState == Player.STATE_READY) {
+                            PlaybackStatus.PLAYING
+                        } else {
+                            PlaybackStatus.PAUSED
+                        },
                         errorMessage = if (isPlaying) null else it.errorMessage
                     )
                 }
@@ -167,8 +167,7 @@ class CrossfadePlayer @Inject constructor(
     }
 
     override fun playTrack(track: Track, queue: List<Track>, startIndex: Int) {
-        if (!requestAudioFocus()) return
-        registerNoisyReceiver()
+        startPlaybackService()
 
         val validQueue = if (queue.isEmpty()) listOf(track) else queue
         val index = if (startIndex in validQueue.indices) startIndex else validQueue.indexOf(track).coerceAtLeast(0)
@@ -181,7 +180,8 @@ class CrossfadePlayer @Inject constructor(
                 queueIndex = index,
                 status = PlaybackStatus.BUFFERING,
                 positionMs = 0L,
-                durationMs = selectedTrack.durationMs
+                durationMs = selectedTrack.durationMs,
+                errorMessage = null
             )
         }
 
@@ -217,28 +217,21 @@ class CrossfadePlayer @Inject constructor(
     }
 
     override fun play() {
-        if (!requestAudioFocus()) return
-        registerNoisyReceiver()
+        startPlaybackService()
         fadeJob?.cancel()
-        fadeJob = scope.launch {
-            activePlayer.volume = 0f
-            activePlayer.play()
-            smoothFadeVolume(activePlayer, 0f, 1f, 150)
-        }
+        activePlayer.volume = 1.0f
+        activePlayer.play()
+        _snapshot.update { it.copy(status = PlaybackStatus.PLAYING) }
     }
 
     override fun pause() {
         fadeJob?.cancel()
-        fadeJob = scope.launch {
-            smoothFadeVolume(activePlayer, activePlayer.volume, 0f, 150)
-            activePlayer.pause()
-            activePlayer.volume = 1.0f
-            _snapshot.update { it.copy(status = PlaybackStatus.PAUSED) }
-        }
+        activePlayer.pause()
+        _snapshot.update { it.copy(status = PlaybackStatus.PAUSED) }
     }
 
     override fun togglePlayPause() {
-        if (activePlayer.isPlaying) {
+        if (activePlayer.isPlaying || (activePlayer.playWhenReady && activePlayer.playbackState == Player.STATE_READY)) {
             pause()
         } else {
             play()
@@ -471,7 +464,7 @@ class CrossfadePlayer @Inject constructor(
             if (download?.status == DownloadStatus.COMPLETED && !download.localFilePath.isNullOrBlank()) {
                 val file = File(download.localFilePath)
                 if (file.exists() && file.length() > 0) {
-                    return android.net.Uri.fromFile(file).toString()
+                    return Uri.fromFile(file).toString()
                 }
             }
         } catch (e: Exception) {
@@ -496,17 +489,6 @@ class CrossfadePlayer @Inject constructor(
         }
     }
 
-    private suspend fun smoothFadeVolume(player: ExoPlayer, from: Float, to: Float, durationMs: Long) {
-        val steps = 15
-        val interval = durationMs / steps
-        for (i in 0..steps) {
-            val progress = i.toFloat() / steps
-            player.volume = from + (to - from) * progress
-            delay(interval)
-        }
-        player.volume = to
-    }
-
     private fun buildMediaItem(track: Track, streamUri: String): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(track.title)
@@ -529,61 +511,6 @@ class CrossfadePlayer @Inject constructor(
         isCrossfading = false
     }
 
-    private fun requestAudioFocus(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val playbackAttributes = AndroidAudioAttributes.Builder()
-                .setUsage(AndroidAudioAttributes.USAGE_MEDIA)
-                .setContentType(AndroidAudioAttributes.CONTENT_TYPE_MUSIC)
-                .build()
-
-            val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                .setAudioAttributes(playbackAttributes)
-                .setAcceptsDelayedFocusGain(true)
-                .setOnAudioFocusChangeListener { focusChange ->
-                    when (focusChange) {
-                        AudioManager.AUDIOFOCUS_LOSS -> pause()
-                        AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> pause()
-                        AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> activePlayer.volume = 0.3f
-                        AudioManager.AUDIOFOCUS_GAIN -> {
-                            activePlayer.volume = 1.0f
-                            play()
-                        }
-                    }
-                }
-                .build()
-            audioFocusRequest = request
-            return audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        } else {
-            @Suppress("DEPRECATION")
-            return audioManager.requestAudioFocus(
-                { focusChange ->
-                    if (focusChange == AudioManager.AUDIOFOCUS_LOSS || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-                        pause()
-                    }
-                },
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN
-            ) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        }
-    }
-
-    private fun registerNoisyReceiver() {
-        if (!isReceiverRegistered) {
-            val filter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-            context.registerReceiver(becomingNoisyReceiver, filter)
-            isReceiverRegistered = true
-        }
-    }
-
-    private fun unregisterNoisyReceiver() {
-        if (isReceiverRegistered) {
-            try {
-                context.unregisterReceiver(becomingNoisyReceiver)
-            } catch (_: Exception) {}
-            isReceiverRegistered = false
-        }
-    }
-
     override fun setVolume(volume: Float) {
         val clamped = volume.coerceIn(0f, 1f)
         activePlayer.volume = clamped
@@ -597,7 +524,6 @@ class CrossfadePlayer @Inject constructor(
     fun getActivePlayerInstance(): ExoPlayer = activePlayer
 
     override fun release() {
-        unregisterNoisyReceiver()
         tickerJob?.cancel()
         fadeJob?.cancel()
         scope.cancel()
