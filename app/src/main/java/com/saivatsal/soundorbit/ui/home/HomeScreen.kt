@@ -35,6 +35,13 @@ import java.util.Calendar
 fun HomeScreen(
     viewModel: HomeViewModel,
     onNavigateToSettings: () -> Unit,
+    onNavigateToFavorites: () -> Unit = {},
+    onNavigateToRecentlyPlayed: () -> Unit = {},
+    onNavigateToExplore: () -> Unit = {},
+    onNavigateToGenre: (String) -> Unit = {},
+    onNavigateToLanguage: (String) -> Unit = {},
+    onNavigateToArtist: (String, String) -> Unit = { _, _ -> },
+    onNavigateToAlbum: (String, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val feedState by viewModel.feedState.collectAsState()
@@ -51,6 +58,20 @@ fun HomeScreen(
             else -> "Good evening"
         }
     }
+
+    val languageFilters = listOf(
+        "all" to "All",
+        "hindi" to "Hindi",
+        "punjabi" to "Punjabi",
+        "telugu" to "Telugu",
+        "tamil" to "Tamil",
+        "korean" to "K-Pop",
+        "english" to "English",
+        "kannada" to "Kannada",
+        "malayalam" to "Malayalam",
+        "bengali" to "Bengali",
+        "marathi" to "Marathi"
+    )
 
     LazyColumn(
         modifier = modifier
@@ -105,6 +126,13 @@ fun HomeScreen(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onNavigateToExplore) {
+                        Icon(
+                            imageVector = Icons.Default.Explore,
+                            contentDescription = "Explore",
+                            tint = EmeraldGreenBright
+                        )
+                    }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
@@ -112,6 +140,37 @@ fun HomeScreen(
                             tint = Color.White
                         )
                     }
+                }
+            }
+        }
+
+        // Language Filter Chips
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                items(languageFilters) { (code, label) ->
+                    val isSelected = feedState.selectedLanguage == code
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { viewModel.selectLanguageFilter(code) },
+                        label = { Text(label, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = DarkSurfaceVariant,
+                            labelColor = TextMediumEmphasis,
+                            selectedContainerColor = EmeraldGreenBright,
+                            selectedLabelColor = Color.Black
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            borderColor = if (isSelected) EmeraldGreenBright else DarkBorderSubtle,
+                            selectedBorderColor = EmeraldGreenBright,
+                            enabled = true,
+                            selected = isSelected
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
                 }
             }
         }
@@ -146,9 +205,7 @@ fun HomeScreen(
                         icon = Icons.Default.Favorite,
                         gradient = listOf(Color(0xFF8B5CF6), Color(0xFF3B1E78)),
                         modifier = Modifier.weight(1f),
-                        onClick = {
-                            if (favorites.isNotEmpty()) viewModel.playTrackList(favorites)
-                        }
+                        onClick = onNavigateToFavorites
                     )
                 }
 
@@ -157,30 +214,47 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     QuickAccessCard(
-                        title = "India Top 50",
-                        icon = Icons.Default.Whatshot,
+                        title = "Explore Hub",
+                        icon = Icons.Default.Explore,
                         gradient = listOf(Color(0xFFFF6B6B), Color(0xFF6B1D2F)),
                         modifier = Modifier.weight(1f),
-                        onClick = {
-                            if (feedState.spotifyIndiaTrending.isNotEmpty()) {
-                                viewModel.playTrackList(feedState.spotifyIndiaTrending)
-                            }
-                        }
+                        onClick = onNavigateToExplore
                     )
                     QuickAccessCard(
                         title = "Recently Played",
                         icon = Icons.Default.History,
                         gradient = listOf(Color(0xFF00BFA5), Color(0xFF004D40)),
                         modifier = Modifier.weight(1f),
-                        onClick = {
-                            if (recentlyPlayed.isNotEmpty()) {
-                                viewModel.playTrackList(recentlyPlayed)
-                            }
-                        }
+                        onClick = onNavigateToRecentlyPlayed
                     )
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        // Selected Regional Language Trending Carousel (if active)
+        if (feedState.selectedLanguage != "all" && feedState.regionalTrending.isNotEmpty()) {
+            item {
+                val langLabel = languageFilters.find { it.first == feedState.selectedLanguage }?.second ?: "Regional"
+                SectionHeader(
+                    title = "Trending in $langLabel",
+                    icon = Icons.Default.Whatshot,
+                    onSeeAll = { onNavigateToLanguage(feedState.selectedLanguage) }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(feedState.regionalTrending) { index, track ->
+                        TrackCard(
+                            track = track,
+                            onClick = { viewModel.playTrackList(feedState.regionalTrending, index) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
 
         // Hero Featured Daily Mix Card
@@ -203,7 +277,11 @@ fun HomeScreen(
 
         // Mood & Genre Explore Quick Cards
         item {
-            SectionHeader(title = "Explore Moods & Genres", icon = Icons.Default.Category)
+            SectionHeader(
+                title = "Explore Moods & Genres",
+                icon = Icons.Default.Category,
+                onSeeAll = onNavigateToExplore
+            )
             Spacer(modifier = Modifier.height(10.dp))
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -219,11 +297,10 @@ fun HomeScreen(
                     MoodItem("Romantic", listOf(Color(0xFFE84393), Color(0xFFFD79A8)), Icons.Default.Favorite)
                 )
                 items(moods) { mood ->
-                    MoodCard(mood = mood, onClick = {
-                        val tracks = (feedState.deezerGenreHits + feedState.spotifyIndiaTrending + feedState.spotifyGlobalTrending)
-                            .shuffled()
-                        if (tracks.isNotEmpty()) viewModel.playTrackList(tracks)
-                    })
+                    MoodCard(
+                        mood = mood,
+                        onClick = { onNavigateToGenre(mood.name) }
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -232,7 +309,11 @@ fun HomeScreen(
         // Recently Played Carousel
         if (recentlyPlayed.isNotEmpty()) {
             item {
-                SectionHeader(title = "Recently Played", icon = Icons.Default.History)
+                SectionHeader(
+                    title = "Recently Played",
+                    icon = Icons.Default.History,
+                    onSeeAll = onNavigateToRecentlyPlayed
+                )
                 Spacer(modifier = Modifier.height(10.dp))
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
@@ -279,7 +360,12 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     items(topArtists) { artist ->
-                        ArtistAvatarItem(artist = artist)
+                        ArtistAvatarItem(
+                            artist = artist,
+                            onClick = {
+                                onNavigateToArtist("DEEZER", artist.artistName)
+                            }
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -322,7 +408,11 @@ fun HomeScreen(
             // Spotify India Top 50 & Bollywood Carousel
             if (feedState.spotifyIndiaTrending.isNotEmpty()) {
                 item {
-                    SectionHeader(title = "Spotify Top 50 India", icon = Icons.Default.Whatshot)
+                    SectionHeader(
+                        title = "Spotify Top 50 India",
+                        icon = Icons.Default.Whatshot,
+                        onSeeAll = { onNavigateToLanguage("hindi") }
+                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -362,7 +452,11 @@ fun HomeScreen(
             // Deezer Genre Hits (Pop & New Releases) Carousel
             if (feedState.deezerGenreHits.isNotEmpty()) {
                 item {
-                    SectionHeader(title = "Pop & New Releases", icon = Icons.Default.MusicNote)
+                    SectionHeader(
+                        title = "Pop & New Releases",
+                        icon = Icons.Default.MusicNote,
+                        onSeeAll = { onNavigateToGenre("Pop") }
+                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -445,27 +539,42 @@ fun HomeScreen(
 @Composable
 private fun SectionHeader(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onSeeAll: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = EmeraldGreenBright,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = EmeraldGreenBright,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+
+        if (onSeeAll != null) {
+            TextButton(onClick = onSeeAll) {
+                Text(
+                    text = "See all",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = EmeraldGreenBright,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
     }
 }
 
@@ -697,10 +806,15 @@ private fun TrackCard(
 }
 
 @Composable
-private fun ArtistAvatarItem(artist: ArtistPlayCount) {
+private fun ArtistAvatarItem(
+    artist: ArtistPlayCount,
+    onClick: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(88.dp)
+        modifier = Modifier
+            .width(88.dp)
+            .clickable { onClick() }
     ) {
         Box(
             modifier = Modifier

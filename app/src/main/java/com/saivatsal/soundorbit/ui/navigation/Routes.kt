@@ -18,10 +18,18 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
         fun createRoute(playlistId: String) = "playlist/$playlistId"
     }
 
+    data object Favorites : Screen("favorites", "Favorites")
+    data object RecentlyPlayed : Screen("recently-played", "Recently Played")
+    data object Explore : Screen("explore", "Explore")
+    data object GenreDetails : Screen("genre/{genreName}", "Genre") {
+        fun createRoute(genreName: String) = "genre/$genreName"
+    }
+    data object LanguageDetails : Screen("language/{languageCode}", "Language") {
+        fun createRoute(languageCode: String) = "language/$languageCode"
+    }
     data object ArtistDetails : Screen("artist/{sourceId}/{artistId}", "Artist") {
         fun createRoute(sourceId: String, artistId: String) = "artist/$sourceId/$artistId"
     }
-
     data object AlbumDetails : Screen("album/{sourceId}/{albumId}", "Album") {
         fun createRoute(sourceId: String, albumId: String) = "album/$sourceId/$albumId"
     }

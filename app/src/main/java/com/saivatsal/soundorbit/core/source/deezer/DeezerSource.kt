@@ -155,10 +155,18 @@ class DeezerSource @Inject constructor(
             }
         }
 
-        // For named regional queries (Bollywood, Hindi, India, Punjabi, Latin, etc.)
+        // For named regional queries and multi-language charts
         val searchQuery = when (cleanGenre) {
             "bollywood", "hindi" -> "Bollywood Top Hits"
-            "india", "punjabi" -> "India Top 50"
+            "india", "punjabi" -> "Punjabi Top Hits"
+            "telugu" -> "Telugu Top Hits"
+            "tamil" -> "Tamil Top Hits"
+            "korean", "kpop", "k-pop" -> "K-Pop Top Hits"
+            "kannada" -> "Kannada Top Hits"
+            "malayalam" -> "Malayalam Top Hits"
+            "bengali" -> "Bengali Top Hits"
+            "marathi" -> "Marathi Top Hits"
+            "english", "global" -> "Global Top Hits"
             "latin" -> "Latin Hits"
             else -> genre ?: "Top Hits"
         }

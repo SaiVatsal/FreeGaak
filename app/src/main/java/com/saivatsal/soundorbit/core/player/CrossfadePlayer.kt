@@ -73,6 +73,10 @@ class CrossfadePlayer @Inject constructor(
     private var activePlayer: ExoPlayer = playerA
     private var standbyPlayer: ExoPlayer = playerB
 
+    // Observable active player instance for MediaLibrarySession synchronization
+    private val _activePlayerInstance = MutableStateFlow<ExoPlayer>(playerA)
+    val activePlayerInstance: StateFlow<ExoPlayer> = _activePlayerInstance.asStateFlow()
+
     private var tickerJob: Job? = null
     private var fadeJob: Job? = null
 
@@ -450,6 +454,7 @@ class CrossfadePlayer @Inject constructor(
                 val temp = activePlayer
                 activePlayer = standbyPlayer
                 standbyPlayer = temp
+                _activePlayerInstance.value = activePlayer
 
                 _snapshot.update {
                     it.copy(

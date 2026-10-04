@@ -131,10 +131,18 @@ class SpotifySource @Inject constructor(
             }
         }
 
-        // Fallback to searching top hits for the genre
+        // Fallback to searching top hits for the genre or language
         val query = when (cleanGenre) {
             "bollywood", "hindi" -> "Bollywood Top 50"
-            "punjabi" -> "Punjabi Hits"
+            "punjabi" -> "Punjabi Top 50"
+            "telugu" -> "Telugu Top 50"
+            "tamil" -> "Tamil Top 50"
+            "korean", "kpop", "k-pop" -> "K-Pop ON"
+            "kannada" -> "Kannada Top 50"
+            "malayalam" -> "Malayalam Top 50"
+            "bengali" -> "Bengali Top 50"
+            "marathi" -> "Marathi Top 50"
+            "english", "global" -> "Today's Top Hits"
             "latin" -> "Viva Latino"
             else -> "${genre ?: "Global"} Top 50"
         }

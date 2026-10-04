@@ -10,6 +10,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
@@ -176,6 +177,7 @@ class PlaybackService : MediaLibraryService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        // Create initial session with the currently active player instance
         mediaLibrarySession = MediaLibrarySession.Builder(
             this,
             crossfadePlayer.getActivePlayerInstance(),
@@ -209,6 +211,17 @@ class PlaybackService : MediaLibraryService() {
                     }
                 }
         }
+
+        // Observe CrossfadePlayer's active player changes and sync MediaLibrarySession
+        serviceScope.launch {
+            crossfadePlayer.activePlayerInstance
+                .collectLatest { activePlayer ->
+                    mediaLibrarySession?.let { session ->
+                        // Update the MediaLibrarySession's player to match the active crossfade player
+                        session.player = activePlayer
+                    }
+                }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -221,10 +234,14 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
+        // Only stop the service if no media is playing or queued
+        // Keep the service alive for background playback when user swipes away the app
         val player = mediaLibrarySession?.player
-        if (player == null || !player.playWhenReady || player.mediaItemCount == 0) {
+        val shouldStop = player == null || (!player.playWhenReady && player.mediaItemCount == 0)
+        if (shouldStop) {
             stopSelf()
         }
+        // Otherwise keep service running for background playback
     }
 
     override fun onDestroy() {

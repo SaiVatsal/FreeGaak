@@ -20,3 +20,5 @@ keystore.properties
 /schemas/
 .kotlin/
 .gradle-cache/
+.claude/
+tasks/

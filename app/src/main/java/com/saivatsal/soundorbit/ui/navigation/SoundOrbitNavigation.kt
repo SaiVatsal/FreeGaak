@@ -23,11 +23,18 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.saivatsal.soundorbit.ui.component.EqualizerSheet
+import com.saivatsal.soundorbit.ui.detail.AlbumDetailScreen
+import com.saivatsal.soundorbit.ui.detail.ArtistDetailScreen
+import com.saivatsal.soundorbit.ui.explore.ExploreScreen
+import com.saivatsal.soundorbit.ui.explore.GenreDetailScreen
+import com.saivatsal.soundorbit.ui.explore.LanguageDetailScreen
 import com.saivatsal.soundorbit.ui.home.HomeScreen
 import com.saivatsal.soundorbit.ui.home.HomeViewModel
+import com.saivatsal.soundorbit.ui.library.FavoritesScreen
 import com.saivatsal.soundorbit.ui.library.LibraryScreen
 import com.saivatsal.soundorbit.ui.library.LibraryViewModel
 import com.saivatsal.soundorbit.ui.library.PlaylistDetailScreen
+import com.saivatsal.soundorbit.ui.library.RecentlyPlayedScreen
 import com.saivatsal.soundorbit.ui.player.MiniPlayer
 import com.saivatsal.soundorbit.ui.player.NowPlayingScreen
 import com.saivatsal.soundorbit.ui.player.PlayerViewModel
@@ -35,8 +42,8 @@ import com.saivatsal.soundorbit.ui.search.SearchScreen
 import com.saivatsal.soundorbit.ui.search.SearchViewModel
 import com.saivatsal.soundorbit.ui.settings.SettingsScreen
 import com.saivatsal.soundorbit.ui.settings.SettingsViewModel
-import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurface
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.OledBlack
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,13 +148,43 @@ fun SoundOrbitApp(
                         viewModel = homeViewModel,
                         onNavigateToSettings = {
                             navController.navigate(Screen.Settings.route)
+                        },
+                        onNavigateToFavorites = {
+                            navController.navigate(Screen.Favorites.route)
+                        },
+                        onNavigateToRecentlyPlayed = {
+                            navController.navigate(Screen.RecentlyPlayed.route)
+                        },
+                        onNavigateToExplore = {
+                            navController.navigate(Screen.Explore.route)
+                        },
+                        onNavigateToGenre = { genre ->
+                            navController.navigate(Screen.GenreDetails.createRoute(genre))
+                        },
+                        onNavigateToLanguage = { language ->
+                            navController.navigate(Screen.LanguageDetails.createRoute(language))
+                        },
+                        onNavigateToArtist = { sourceId, artistId ->
+                            navController.navigate(Screen.ArtistDetails.createRoute(sourceId, artistId))
+                        },
+                        onNavigateToAlbum = { sourceId, albumId ->
+                            navController.navigate(Screen.AlbumDetails.createRoute(sourceId, albumId))
                         }
                     )
                 }
 
                 composable(Screen.Search.route) {
                     SearchScreen(
-                        viewModel = searchViewModel
+                        viewModel = searchViewModel,
+                        onNavigateToArtist = { sourceId, artistId ->
+                            navController.navigate(Screen.ArtistDetails.createRoute(sourceId, artistId))
+                        },
+                        onNavigateToAlbum = { sourceId, albumId ->
+                            navController.navigate(Screen.AlbumDetails.createRoute(sourceId, albumId))
+                        },
+                        onNavigateToPlaylist = { playlistId ->
+                            navController.navigate(Screen.PlaylistDetails.createRoute(playlistId))
+                        }
                     )
                 }
 
@@ -157,6 +194,91 @@ fun SoundOrbitApp(
                         onNavigateToPlaylist = { playlistId ->
                             navController.navigate(Screen.PlaylistDetails.createRoute(playlistId))
                         }
+                    )
+                }
+
+                composable(Screen.Favorites.route) {
+                    FavoritesScreen(
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.RecentlyPlayed.route) {
+                    RecentlyPlayedScreen(
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.Explore.route) {
+                    ExploreScreen(
+                        onBack = { navController.popBackStack() },
+                        onSelectGenre = { genre ->
+                            navController.navigate(Screen.GenreDetails.createRoute(genre))
+                        },
+                        onSelectLanguage = { language ->
+                            navController.navigate(Screen.LanguageDetails.createRoute(language))
+                        }
+                    )
+                }
+
+                composable(
+                    route = Screen.GenreDetails.route,
+                    arguments = listOf(
+                        navArgument("genreName") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val genreName = backStackEntry.arguments?.getString("genreName") ?: ""
+                    GenreDetailScreen(
+                        genreName = genreName,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(
+                    route = Screen.LanguageDetails.route,
+                    arguments = listOf(
+                        navArgument("languageCode") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val languageCode = backStackEntry.arguments?.getString("languageCode") ?: ""
+                    LanguageDetailScreen(
+                        languageCode = languageCode,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(
+                    route = Screen.ArtistDetails.route,
+                    arguments = listOf(
+                        navArgument("sourceId") { type = NavType.StringType },
+                        navArgument("artistId") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val sourceId = backStackEntry.arguments?.getString("sourceId") ?: ""
+                    val artistId = backStackEntry.arguments?.getString("artistId") ?: ""
+                    ArtistDetailScreen(
+                        sourceId = sourceId,
+                        artistId = artistId,
+                        onBack = { navController.popBackStack() },
+                        onAlbumClick = { sId, aId ->
+                            navController.navigate(Screen.AlbumDetails.createRoute(sId, aId))
+                        }
+                    )
+                }
+
+                composable(
+                    route = Screen.AlbumDetails.route,
+                    arguments = listOf(
+                        navArgument("sourceId") { type = NavType.StringType },
+                        navArgument("albumId") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val sourceId = backStackEntry.arguments?.getString("sourceId") ?: ""
+                    val albumId = backStackEntry.arguments?.getString("albumId") ?: ""
+                    AlbumDetailScreen(
+                        sourceId = sourceId,
+                        albumId = albumId,
+                        onBack = { navController.popBackStack() }
                     )
                 }
 

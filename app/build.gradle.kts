@@ -97,6 +97,13 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+            all {
+                it.jvmArgs(
+                    "-Djdk.lang.Process.allowAmbiguousCommands=true",
+                    "-Djava.io.tmpdir=C:/temp",
+                    "-Dfile.encoding=UTF-8"
+                )
+            }
         }
     }
 

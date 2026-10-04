@@ -21,6 +21,8 @@ import javax.inject.Inject
 data class HomeFeedState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
+    val selectedLanguage: String = "all",
+    val regionalTrending: List<Track> = emptyList(),
     val spotifyGlobalTrending: List<Track> = emptyList(),
     val spotifyIndiaTrending: List<Track> = emptyList(),
     val deezerTrending: List<Track> = emptyList(),
@@ -64,6 +66,40 @@ class HomeViewModel @Inject constructor(
 
     fun refreshFeed() {
         loadFeed(isRefresh = true)
+    }
+
+    fun selectLanguageFilter(language: String) {
+        val currentLang = _feedState.value.selectedLanguage
+        if (currentLang == language) return
+
+        _feedState.update { it.copy(selectedLanguage = language) }
+        loadRegionalLanguageFeed(language)
+    }
+
+    private fun loadRegionalLanguageFeed(language: String) {
+        if (language == "all") {
+            _feedState.update { it.copy(regionalTrending = emptyList()) }
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val deezer = sourceRegistry.getSource(SourceId.DEEZER)
+                val spotify = sourceRegistry.getSource(SourceId.SPOTIFY)
+
+                val deezerDeferred = async {
+                    deezer?.trending(language, TrendingWindow.ALL_TIME, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+                val spotifyDeferred = async {
+                    spotify?.trending(language, TrendingWindow.WEEK, PageRequest(0, 15))?.getOrNull()?.items ?: emptyList()
+                }
+
+                val tracks = (deezerDeferred.await() + spotifyDeferred.await()).distinctBy { it.compositeKey }
+                _feedState.update { it.copy(regionalTrending = tracks) }
+            } catch (e: Exception) {
+                // Ignore regional filter error and keep existing feed
+            }
+        }
     }
 
     private fun loadFeed(isRefresh: Boolean) {

@@ -30,6 +30,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.saivatsal.soundorbit.core.model.Album
+import com.saivatsal.soundorbit.core.model.Artist
+import com.saivatsal.soundorbit.core.model.Playlist
 import com.saivatsal.soundorbit.core.model.SearchFilterType
 import com.saivatsal.soundorbit.core.model.SourceId
 import com.saivatsal.soundorbit.ui.component.TrackItem
@@ -39,6 +42,9 @@ import com.saivatsal.soundorbit.ui.theme.*
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
+    onNavigateToArtist: (String, String) -> Unit = { _, _ -> },
+    onNavigateToAlbum: (String, String) -> Unit = { _, _ -> },
+    onNavigateToPlaylist: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -227,7 +233,7 @@ fun SearchScreen(
         if (uiState.query.isBlank()) {
             // Browse Genres Title
             Text(
-                text = "Explore Categories",
+                text = "Explore Categories & Genres",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -261,7 +267,7 @@ fun SearchScreen(
                 ) {
                     CircularProgressIndicator(color = EmeraldGreenBright)
                 }
-            } else if (uiState.tracks.isEmpty() && uiState.artists.isEmpty() && uiState.albums.isEmpty()) {
+            } else if (uiState.tracks.isEmpty() && uiState.artists.isEmpty() && uiState.albums.isEmpty() && uiState.playlists.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -307,7 +313,9 @@ fun SearchScreen(
                                 items(uiState.artists) { artist ->
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.width(90.dp)
+                                        modifier = Modifier
+                                            .width(90.dp)
+                                            .clickable { onNavigateToArtist(artist.sourceId.name, artist.sourceArtistId) }
                                     ) {
                                         AsyncImage(
                                             model = artist.imageUrl,
@@ -327,6 +335,110 @@ fun SearchScreen(
                                             color = Color.White,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+
+                    // Albums Section (if any)
+                    if (uiState.albums.isNotEmpty() && (uiState.selectedFilter == SearchFilterType.ALL || uiState.selectedFilter == SearchFilterType.ALBUMS)) {
+                        item {
+                            Text(
+                                text = "Albums",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(uiState.albums) { album ->
+                                    Column(
+                                        modifier = Modifier
+                                            .width(130.dp)
+                                            .clickable { onNavigateToAlbum(album.sourceId.name, album.sourceAlbumId) }
+                                    ) {
+                                        AsyncImage(
+                                            model = album.artworkUrl,
+                                            contentDescription = album.name,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .size(130.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(DarkSurfaceVariant)
+                                                .border(0.8.dp, DarkBorderSubtle, RoundedCornerShape(12.dp))
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            text = album.name,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = album.artistName,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = TextMediumEmphasis,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+
+                    // Playlists Section (if any)
+                    if (uiState.playlists.isNotEmpty() && (uiState.selectedFilter == SearchFilterType.ALL || uiState.selectedFilter == SearchFilterType.PLAYLISTS)) {
+                        item {
+                            Text(
+                                text = "Playlists",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(uiState.playlists) { playlist ->
+                                    Column(
+                                        modifier = Modifier
+                                            .width(130.dp)
+                                            .clickable { onNavigateToPlaylist(playlist.sourcePlaylistId) }
+                                    ) {
+                                        AsyncImage(
+                                            model = playlist.artworkUrl,
+                                            contentDescription = playlist.name,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .size(130.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(DarkSurfaceVariant)
+                                                .border(0.8.dp, DarkBorderSubtle, RoundedCornerShape(12.dp))
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            text = playlist.name,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = "${playlist.trackCount} tracks",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = TextMediumEmphasis
                                         )
                                     }
                                 }
@@ -374,12 +486,15 @@ private fun GenreCard(
         "Rock" -> listOf(Color(0xFFFF1744), Color(0xFFB71C1C))
         "Pop" -> listOf(Color(0xFFFF4081), Color(0xFFC51162))
         "Bollywood" -> listOf(Color(0xFFFF6B6B), Color(0xFFFF2A6D))
+        "Punjabi" -> listOf(Color(0xFFFF7043), Color(0xFFD84315))
         "Jazz" -> listOf(Color(0xFFFFD600), Color(0xFFFF6D00))
         "Ambient" -> listOf(Color(0xFF00E676), Color(0xFF00B0FF))
         "Indie" -> listOf(Color(0xFF7C4DFF), Color(0xFF536DFE))
         "Classical" -> listOf(Color(0xFF8D6E63), Color(0xFF4E342E))
         "Lo-Fi" -> listOf(Color(0xFF9C27B0), Color(0xFFE040FB))
         "Synthwave" -> listOf(Color(0xFFFF007F), Color(0xFF7B1FA2))
+        "K-Pop" -> listOf(Color(0xFFFF4081), Color(0xFF7C4DFF))
+        "Latin" -> listOf(Color(0xFFFF5722), Color(0xFFFF9800))
         "Folk" -> listOf(Color(0xFF4CAF50), Color(0xFF1B5E20))
         else -> listOf(Color(0xFF00B4D8), Color(0xFF0077B6))
     }
