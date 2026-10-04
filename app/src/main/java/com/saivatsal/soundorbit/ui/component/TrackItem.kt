@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.saivatsal.soundorbit.core.model.Track
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
 import com.saivatsal.soundorbit.ui.theme.NebulaCoral
 import java.util.Locale
@@ -82,7 +82,7 @@ fun TrackItem(
                 text = track.title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (isPlaying) FontWeight.Bold else FontWeight.Normal,
-                color = if (isPlaying) CosmicTeal else MaterialTheme.colorScheme.onSurface,
+                color = if (isPlaying) EmeraldGreenBright else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

@@ -1,6 +1,7 @@
 package com.saivatsal.soundorbit.ui.search
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,14 +28,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.saivatsal.soundorbit.core.model.SearchFilterType
 import com.saivatsal.soundorbit.core.model.SourceId
 import com.saivatsal.soundorbit.ui.component.TrackItem
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
-import com.saivatsal.soundorbit.ui.theme.DarkSurface
-import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
-import com.saivatsal.soundorbit.ui.theme.OledBlack
+import com.saivatsal.soundorbit.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,16 +49,25 @@ fun SearchScreen(
             .background(OledBlack)
             .statusBarsPadding()
     ) {
+        // Search Header Title
+        Text(
+            text = "Search",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black,
+            color = Color.White,
+            modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 8.dp)
+        )
+
         // Search TextField Header
         OutlinedTextField(
             value = uiState.query,
             onValueChange = { viewModel.onQueryChange(it) },
-            placeholder = { Text("Search songs, artists, albums, or genres...") },
+            placeholder = { Text("Search songs, artists, albums, or genres...", color = TextLowEmphasis) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
-                    tint = CosmicTeal
+                    tint = EmeraldGreenBright
                 )
             },
             trailingIcon = {
@@ -74,88 +82,114 @@ fun SearchScreen(
                 }
             },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = CosmicTeal,
-                unfocusedBorderColor = DarkSurfaceVariant,
+                focusedBorderColor = EmeraldGreenBright,
+                unfocusedBorderColor = DarkBorder,
                 focusedContainerColor = DarkSurface,
-                unfocusedContainerColor = DarkSurface
+                unfocusedContainerColor = DarkSurface,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 6.dp)
         )
 
         // Source Filter Chips Row
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
                 FilterChip(
                     selected = uiState.selectedSource == null,
                     onClick = { viewModel.onSourceFilterSelect(null) },
-                    label = { Text("All Sources") },
+                    label = { Text("All Sources", fontWeight = FontWeight.SemiBold) },
+                    shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTeal,
-                        selectedLabelColor = Color.Black
-                    )
-                )
-            }
-            item {
-                FilterChip(
-                    selected = uiState.selectedSource == SourceId.AUDIUS,
-                    onClick = { viewModel.onSourceFilterSelect(SourceId.AUDIUS) },
-                    label = { Text("Audius") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTeal,
-                        selectedLabelColor = Color.Black
-                    )
-                )
-            }
-            item {
-                FilterChip(
-                    selected = uiState.selectedSource == SourceId.JAMENDO,
-                    onClick = { viewModel.onSourceFilterSelect(SourceId.JAMENDO) },
-                    label = { Text("Jamendo") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTeal,
-                        selectedLabelColor = Color.Black
-                    )
-                )
-            }
-            item {
-                FilterChip(
-                    selected = uiState.selectedSource == SourceId.DEEZER,
-                    onClick = { viewModel.onSourceFilterSelect(SourceId.DEEZER) },
-                    label = { Text("Deezer") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTeal,
-                        selectedLabelColor = Color.Black
-                    )
+                        selectedContainerColor = EmeraldGreenBright,
+                        selectedLabelColor = Color.Black,
+                        containerColor = DarkSurfaceVariant,
+                        labelColor = TextMediumEmphasis
+                    ),
+                    border = null
                 )
             }
             item {
                 FilterChip(
                     selected = uiState.selectedSource == SourceId.SPOTIFY,
                     onClick = { viewModel.onSourceFilterSelect(SourceId.SPOTIFY) },
-                    label = { Text("Spotify") },
+                    label = { Text("Spotify", fontWeight = FontWeight.SemiBold) },
+                    shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTeal,
-                        selectedLabelColor = Color.Black
-                    )
+                        selectedContainerColor = EmeraldGreenBright,
+                        selectedLabelColor = Color.Black,
+                        containerColor = DarkSurfaceVariant,
+                        labelColor = TextMediumEmphasis
+                    ),
+                    border = null
+                )
+            }
+            item {
+                FilterChip(
+                    selected = uiState.selectedSource == SourceId.DEEZER,
+                    onClick = { viewModel.onSourceFilterSelect(SourceId.DEEZER) },
+                    label = { Text("Deezer", fontWeight = FontWeight.SemiBold) },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = EmeraldGreenBright,
+                        selectedLabelColor = Color.Black,
+                        containerColor = DarkSurfaceVariant,
+                        labelColor = TextMediumEmphasis
+                    ),
+                    border = null
+                )
+            }
+            item {
+                FilterChip(
+                    selected = uiState.selectedSource == SourceId.AUDIUS,
+                    onClick = { viewModel.onSourceFilterSelect(SourceId.AUDIUS) },
+                    label = { Text("Audius", fontWeight = FontWeight.SemiBold) },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = EmeraldGreenBright,
+                        selectedLabelColor = Color.Black,
+                        containerColor = DarkSurfaceVariant,
+                        labelColor = TextMediumEmphasis
+                    ),
+                    border = null
+                )
+            }
+            item {
+                FilterChip(
+                    selected = uiState.selectedSource == SourceId.JAMENDO,
+                    onClick = { viewModel.onSourceFilterSelect(SourceId.JAMENDO) },
+                    label = { Text("Jamendo", fontWeight = FontWeight.SemiBold) },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = EmeraldGreenBright,
+                        selectedLabelColor = Color.Black,
+                        containerColor = DarkSurfaceVariant,
+                        labelColor = TextMediumEmphasis
+                    ),
+                    border = null
                 )
             }
             item {
                 FilterChip(
                     selected = uiState.selectedSource == SourceId.LOCAL,
                     onClick = { viewModel.onSourceFilterSelect(SourceId.LOCAL) },
-                    label = { Text("Local Audio") },
+                    label = { Text("Local Audio", fontWeight = FontWeight.SemiBold) },
+                    shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTeal,
-                        selectedLabelColor = Color.Black
-                    )
+                        selectedContainerColor = EmeraldGreenBright,
+                        selectedLabelColor = Color.Black,
+                        containerColor = DarkSurfaceVariant,
+                        labelColor = TextMediumEmphasis
+                    ),
+                    border = null
                 )
             }
         }
@@ -173,10 +207,14 @@ fun SearchScreen(
                             selected = uiState.selectedFilter == filter,
                             onClick = { viewModel.onCategoryFilterSelect(filter) },
                             label = { Text(filter.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                            shape = RoundedCornerShape(16.dp),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = CosmicTeal.copy(alpha = 0.8f),
-                                selectedLabelColor = Color.Black
-                            )
+                                selectedContainerColor = EmeraldGreenBright.copy(alpha = 0.85f),
+                                selectedLabelColor = Color.Black,
+                                containerColor = DarkSurfaceVariant,
+                                labelColor = TextMediumEmphasis
+                            ),
+                            border = null
                         )
                     }
                 }
@@ -189,7 +227,7 @@ fun SearchScreen(
         if (uiState.query.isBlank()) {
             // Browse Genres Title
             Text(
-                text = "Browse All Genres",
+                text = "Explore Categories",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -221,7 +259,7 @@ fun SearchScreen(
                         .padding(bottom = 80.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = CosmicTeal)
+                    CircularProgressIndicator(color = EmeraldGreenBright)
                 }
             } else if (uiState.tracks.isEmpty() && uiState.artists.isEmpty() && uiState.albums.isEmpty()) {
                 Box(
@@ -234,14 +272,14 @@ fun SearchScreen(
                         Icon(
                             imageVector = Icons.Default.SearchOff,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = TextMediumEmphasis,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "No results found for \"${uiState.query}\"",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = TextMediumEmphasis
                         )
                     }
                 }
@@ -279,8 +317,9 @@ fun SearchScreen(
                                                 .size(72.dp)
                                                 .clip(CircleShape)
                                                 .background(DarkSurfaceVariant)
+                                                .border(1.5.dp, EmeraldGreenBright.copy(alpha = 0.5f), CircleShape)
                                         )
-                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Spacer(modifier = Modifier.height(6.dp))
                                         Text(
                                             text = artist.name,
                                             style = MaterialTheme.typography.bodySmall,
@@ -334,6 +373,7 @@ private fun GenreCard(
         "Hip-Hop" -> listOf(Color(0xFFFF9100), Color(0xFFFF3D00))
         "Rock" -> listOf(Color(0xFFFF1744), Color(0xFFB71C1C))
         "Pop" -> listOf(Color(0xFFFF4081), Color(0xFFC51162))
+        "Bollywood" -> listOf(Color(0xFFFF6B6B), Color(0xFFFF2A6D))
         "Jazz" -> listOf(Color(0xFFFFD600), Color(0xFFFF6D00))
         "Ambient" -> listOf(Color(0xFF00E676), Color(0xFF00B0FF))
         "Indie" -> listOf(Color(0xFF7C4DFF), Color(0xFF536DFE))
@@ -347,8 +387,8 @@ private fun GenreCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(84.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .height(88.dp)
+            .clip(RoundedCornerShape(16.dp))
             .background(Brush.linearGradient(gradientColors))
             .clickable { onClick() }
             .padding(14.dp)

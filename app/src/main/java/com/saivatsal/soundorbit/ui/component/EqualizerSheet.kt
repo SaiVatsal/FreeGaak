@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.saivatsal.soundorbit.core.audio.EqualizerState
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurface
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
 
@@ -56,7 +56,7 @@ fun EqualizerSheet(
                     Icon(
                         imageVector = Icons.Default.Equalizer,
                         contentDescription = null,
-                        tint = CosmicTeal,
+                        tint = EmeraldGreenBright,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -72,7 +72,7 @@ fun EqualizerSheet(
                     onCheckedChange = onToggleEnabled,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.Black,
-                        checkedTrackColor = CosmicTeal
+                        checkedTrackColor = EmeraldGreenBright
                     )
                 )
             }
@@ -156,7 +156,7 @@ fun EqualizerSheet(
                             Text(
                                 text = dbLabel,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (band.currentLevelMb != 0.toShort()) CosmicTeal else MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (band.currentLevelMb != 0.toShort()) EmeraldGreenBright else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
@@ -168,8 +168,8 @@ fun EqualizerSheet(
                             valueRange = minLevel..maxLevel,
                             enabled = state.isEnabled,
                             colors = SliderDefaults.colors(
-                                thumbColor = CosmicTeal,
-                                activeTrackColor = CosmicTeal,
+                                thumbColor = EmeraldGreenBright,
+                                activeTrackColor = EmeraldGreenBright,
                                 inactiveTrackColor = DarkSurfaceVariant
                             )
                         )
@@ -191,8 +191,8 @@ fun EqualizerSheet(
                         valueRange = 0f..1000f,
                         enabled = state.isEnabled,
                         colors = SliderDefaults.colors(
-                            thumbColor = CosmicTeal,
-                            activeTrackColor = CosmicTeal,
+                            thumbColor = EmeraldGreenBright,
+                            activeTrackColor = EmeraldGreenBright,
                             inactiveTrackColor = DarkSurfaceVariant
                         )
                     )
@@ -211,8 +211,8 @@ fun EqualizerSheet(
                         valueRange = 0f..1000f,
                         enabled = state.isEnabled,
                         colors = SliderDefaults.colors(
-                            thumbColor = CosmicTeal,
-                            activeTrackColor = CosmicTeal,
+                            thumbColor = EmeraldGreenBright,
+                            activeTrackColor = EmeraldGreenBright,
                             inactiveTrackColor = DarkSurfaceVariant
                         )
                     )

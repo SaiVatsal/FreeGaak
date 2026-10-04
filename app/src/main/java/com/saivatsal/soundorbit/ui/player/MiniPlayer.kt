@@ -20,7 +20,7 @@ import coil3.compose.AsyncImage
 import com.saivatsal.soundorbit.core.player.PlaybackStatus
 import com.saivatsal.soundorbit.core.player.PlayerSnapshot
 import com.saivatsal.soundorbit.ui.component.SourceBadge
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
 
 @Composable
@@ -56,7 +56,7 @@ fun MiniPlayer(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(2.dp),
-                color = CosmicTeal,
+                color = EmeraldGreenBright,
                 trackColor = Color.Transparent
             )
 
@@ -118,7 +118,7 @@ fun MiniPlayer(
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) CosmicTeal else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (isFavorite) EmeraldGreenBright else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -133,7 +133,7 @@ fun MiniPlayer(
                     if (isBuffering) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
-                            color = CosmicTeal,
+                            color = EmeraldGreenBright,
                             strokeWidth = 2.dp
                         )
                     } else {

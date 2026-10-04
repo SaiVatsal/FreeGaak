@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -28,11 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.saivatsal.soundorbit.BuildConfig
 import com.saivatsal.soundorbit.core.model.AudioQuality
 import com.saivatsal.soundorbit.core.model.SourceId
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
-import com.saivatsal.soundorbit.ui.theme.DarkSurface
-import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
-import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
-import com.saivatsal.soundorbit.ui.theme.OledBlack
+import com.saivatsal.soundorbit.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +81,7 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = "Settings",
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                 },
@@ -114,6 +111,7 @@ fun SettingsScreen(
                 Surface(
                     color = DarkSurface,
                     shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(0.8.dp, DarkBorderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -146,7 +144,7 @@ fun SettingsScreen(
                                     Icon(
                                         imageVector = Icons.Default.Tune,
                                         contentDescription = null,
-                                        tint = CosmicTeal,
+                                        tint = EmeraldGreenBright,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -161,7 +159,7 @@ fun SettingsScreen(
                                     text = if (settings.crossfadeDurationSec == 0) "Off" else "${settings.crossfadeDurationSec}s",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = CosmicTeal
+                                    color = EmeraldGreenBright
                                 )
                             }
                             Slider(
@@ -170,8 +168,8 @@ fun SettingsScreen(
                                 valueRange = 0f..12f,
                                 steps = 11,
                                 colors = SliderDefaults.colors(
-                                    thumbColor = CosmicTeal,
-                                    activeTrackColor = CosmicTeal,
+                                    thumbColor = EmeraldGreenBright,
+                                    activeTrackColor = EmeraldGreenBright,
                                     inactiveTrackColor = DarkSurfaceVariant
                                 ),
                                 modifier = Modifier.padding(top = 4.dp)
@@ -217,6 +215,7 @@ fun SettingsScreen(
                 Surface(
                     color = DarkSurface,
                     shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(0.8.dp, DarkBorderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -242,6 +241,7 @@ fun SettingsScreen(
                 Surface(
                     color = DarkSurface,
                     shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(0.8.dp, DarkBorderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -263,8 +263,36 @@ fun SettingsScreen(
                             text = "Enabled Sources",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = CosmicTeal,
+                            color = EmeraldGreenBright,
                             modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        // Spotify Discovery Source
+                        SettingsToggleRow(
+                            title = "Spotify Discovery",
+                            subtitle = "Explore Top 50 Global & India Charts with cross-source streaming",
+                            icon = Icons.Default.GraphicEq,
+                            checked = settings.enabledSources.contains(SourceId.SPOTIFY),
+                            onCheckedChange = { viewModel.toggleSource(SourceId.SPOTIFY) }
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = DarkSurfaceVariant
+                        )
+
+                        // Deezer Source
+                        SettingsToggleRow(
+                            title = "Deezer Music",
+                            subtitle = "Stream music previews and chart hits via RapidAPI Deezer",
+                            icon = Icons.Default.Album,
+                            checked = settings.enabledSources.contains(SourceId.DEEZER),
+                            onCheckedChange = { viewModel.toggleSource(SourceId.DEEZER) }
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = DarkSurfaceVariant
                         )
 
                         // Audius Source
@@ -295,34 +323,6 @@ fun SettingsScreen(
                             color = DarkSurfaceVariant
                         )
 
-                        // Deezer Source
-                        SettingsToggleRow(
-                            title = "Deezer Music",
-                            subtitle = "Stream music previews and discover tracks via RapidAPI Deezer",
-                            icon = Icons.Default.Album,
-                            checked = settings.enabledSources.contains(SourceId.DEEZER),
-                            onCheckedChange = { viewModel.toggleSource(SourceId.DEEZER) }
-                        )
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            color = DarkSurfaceVariant
-                        )
-
-                        // Spotify Discovery Source
-                        SettingsToggleRow(
-                            title = "Spotify Discovery",
-                            subtitle = "Explore Top 50 Global, India & Viral Charts with cross-source streaming",
-                            icon = Icons.Default.GraphicEq,
-                            checked = settings.enabledSources.contains(SourceId.SPOTIFY),
-                            onCheckedChange = { viewModel.toggleSource(SourceId.SPOTIFY) }
-                        )
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            color = DarkSurfaceVariant
-                        )
-
                         // Local Files Source
                         SettingsToggleRow(
                             title = "Local Device Media",
@@ -344,6 +344,7 @@ fun SettingsScreen(
                 Surface(
                     color = DarkSurface,
                     shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(0.8.dp, DarkBorderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -368,12 +369,12 @@ fun SettingsScreen(
                             OutlinedButton(
                                 onClick = { showClearCacheConfirm = true },
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = CosmicTeal
+                                    contentColor = EmeraldGreenBright
                                 ),
                                 border = ButtonDefaults.outlinedButtonBorder.copy(
-                                    brush = androidx.compose.ui.graphics.SolidColor(CosmicTeal.copy(alpha = 0.5f))
+                                    brush = androidx.compose.ui.graphics.SolidColor(EmeraldGreenBright.copy(alpha = 0.5f))
                                 ),
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(10.dp)
                             ) {
                                 Text("Clear")
                             }
@@ -408,7 +409,7 @@ fun SettingsScreen(
                 }
             }
 
-            // About & Privacy
+            // About & Developer Branding
             item {
                 SettingsSectionHeader(title = "About Sound Orbit", icon = Icons.Default.Info)
             }
@@ -417,11 +418,12 @@ fun SettingsScreen(
                 Surface(
                     color = DarkSurface,
                     shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldGreenBright.copy(alpha = 0.3f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -431,16 +433,36 @@ fun SettingsScreen(
                             Text(
                                 text = "Sound Orbit v${BuildConfig.VERSION_NAME}",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Black,
                                 color = Color.White
                             )
-                            Text(
-                                text = "by Grindokuu",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = EmeraldGreenBright
-                            )
+
+                            Surface(
+                                color = DarkSurfaceVariant,
+                                shape = RoundedCornerShape(16.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldGreenBright.copy(alpha = 0.8f))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Code,
+                                        contentDescription = null,
+                                        tint = EmeraldGreenBright,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Grindokuu",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = EmeraldGreenBright
+                                    )
+                                }
+                            }
                         }
+
                         Text(
                             text = "Developed by Grindokuu • An offline-first, ad-free, 100% private music player built for open audio ecosystems.",
                             style = MaterialTheme.typography.bodyMedium,
@@ -468,7 +490,7 @@ fun SettingsScreen(
     if (showQualityDialog) {
         AlertDialog(
             onDismissRequest = { showQualityDialog = false },
-            title = { Text("Audio Streaming Quality", color = Color.White) },
+            title = { Text("Audio Streaming Quality", color = Color.White, fontWeight = FontWeight.Bold) },
             containerColor = DarkSurface,
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -477,7 +499,7 @@ fun SettingsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(10.dp))
                                 .clickable {
                                     viewModel.setAudioQuality(quality)
                                     showQualityDialog = false
@@ -491,7 +513,7 @@ fun SettingsScreen(
                                     viewModel.setAudioQuality(quality)
                                     showQualityDialog = false
                                 },
-                                colors = RadioButtonDefaults.colors(selectedColor = CosmicTeal)
+                                colors = RadioButtonDefaults.colors(selectedColor = EmeraldGreenBright)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
@@ -502,7 +524,7 @@ fun SettingsScreen(
                                         AudioQuality.HIGH -> "High (320 kbps)"
                                         AudioQuality.AUTO -> "Auto (Adaptive)"
                                     },
-                                    color = if (isSelected) CosmicTeal else Color.White,
+                                    color = if (isSelected) EmeraldGreenBright else Color.White,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
                                 Text(
@@ -522,7 +544,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showQualityDialog = false }) {
-                    Text("Close", color = CosmicTeal)
+                    Text("Close", color = EmeraldGreenBright)
                 }
             }
         )
@@ -532,7 +554,7 @@ fun SettingsScreen(
     if (showImportDialog) {
         AlertDialog(
             onDismissRequest = { showImportDialog = false },
-            title = { Text("Import JSON Backup", color = Color.White) },
+            title = { Text("Import JSON Backup", color = Color.White, fontWeight = FontWeight.Bold) },
             containerColor = DarkSurface,
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -547,9 +569,10 @@ fun SettingsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(180.dp),
+                        shape = RoundedCornerShape(12.dp),
                         placeholder = { Text("{\"version\": 1, \"playlists\": [...]}") },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CosmicTeal,
+                            focusedBorderColor = EmeraldGreenBright,
                             unfocusedBorderColor = DarkSurfaceVariant,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.LightGray
@@ -566,9 +589,9 @@ fun SettingsScreen(
                             importText = ""
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicTeal)
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreenBright, contentColor = Color.Black)
                 ) {
-                    Text("Restore", color = OledBlack, fontWeight = FontWeight.Bold)
+                    Text("Restore", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -583,7 +606,7 @@ fun SettingsScreen(
     if (showClearCacheConfirm) {
         AlertDialog(
             onDismissRequest = { showClearCacheConfirm = false },
-            title = { Text("Clear Audio & Image Cache?", color = Color.White) },
+            title = { Text("Clear Audio & Image Cache?", color = Color.White, fontWeight = FontWeight.Bold) },
             text = {
                 Text(
                     "This will delete temporarily cached album art and audio files ($cacheSize). Your saved playlists and favorites will remain untouched.",
@@ -620,7 +643,7 @@ private fun SettingsSectionHeader(title: String, icon: ImageVector) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = CosmicTeal,
+            tint = EmeraldGreenBright,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -628,7 +651,7 @@ private fun SettingsSectionHeader(title: String, icon: ImageVector) {
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = CosmicTeal
+            color = EmeraldGreenBright
         )
     }
 }
@@ -655,7 +678,7 @@ private fun SettingsToggleRow(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (checked) CosmicTeal else Color.Gray,
+                tint = if (checked) EmeraldGreenBright else Color.Gray,
                 modifier = Modifier.size(22.dp)
             )
             Spacer(modifier = Modifier.width(14.dp))
@@ -678,8 +701,8 @@ private fun SettingsToggleRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = CosmicTeal,
-                checkedTrackColor = CosmicTeal.copy(alpha = 0.35f),
+                checkedThumbColor = EmeraldGreenBright,
+                checkedTrackColor = EmeraldGreenBright.copy(alpha = 0.35f),
                 uncheckedThumbColor = Color.Gray,
                 uncheckedTrackColor = DarkSurfaceVariant
             )
@@ -708,7 +731,7 @@ private fun SettingsClickableRow(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = CosmicTeal,
+                tint = EmeraldGreenBright,
                 modifier = Modifier.size(22.dp)
             )
             Spacer(modifier = Modifier.width(14.dp))
@@ -740,12 +763,12 @@ private fun PrivacyBadge(label: String) {
     Surface(
         color = DarkSurfaceVariant,
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.border(0.5.dp, CosmicTeal.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+        modifier = Modifier.border(0.5.dp, EmeraldGreenBright.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = CosmicTeal,
+            color = EmeraldGreenBright,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium

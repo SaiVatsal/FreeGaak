@@ -2,6 +2,7 @@ package com.saivatsal.soundorbit.ui.player
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,10 +26,7 @@ import coil3.compose.AsyncImage
 import com.saivatsal.soundorbit.core.player.PlaybackStatus
 import com.saivatsal.soundorbit.core.player.RepeatState
 import com.saivatsal.soundorbit.ui.component.*
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
-import com.saivatsal.soundorbit.ui.theme.DarkSurface
-import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
-import com.saivatsal.soundorbit.ui.theme.OledBlack
+import com.saivatsal.soundorbit.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,8 +77,8 @@ fun NowPlayingScreen(
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
-            DarkSurfaceVariant.copy(alpha = 0.65f),
-            DarkSurface,
+            DarkSurfaceVariant,
+            ObsidianBlack,
             OledBlack
         )
     )
@@ -122,14 +120,14 @@ fun NowPlayingScreen(
                     Text(
                         text = "PLAYING FROM",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = TextMediumEmphasis,
                         letterSpacing = 1.sp
                     )
                     Text(
                         text = track.sourceId.name,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = CosmicTeal
+                        color = EmeraldGreenBright
                     )
                 }
 
@@ -138,7 +136,7 @@ fun NowPlayingScreen(
                         Icon(
                             imageVector = Icons.Default.Bedtime,
                             contentDescription = "Sleep Timer",
-                            tint = if (sleepTimerState.isActive) CosmicTeal else Color.White,
+                            tint = if (sleepTimerState.isActive) EmeraldGreenBright else Color.White,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -154,7 +152,7 @@ fun NowPlayingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Middle View: Toggle between Album Art & Synced Lyrics
             Box(
@@ -168,9 +166,10 @@ fun NowPlayingScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(DarkSurfaceVariant.copy(alpha = 0.4f))
-                                .padding(12.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(DarkSurfaceVariant.copy(alpha = 0.5f))
+                                .border(1.dp, DarkBorderSubtle, RoundedCornerShape(20.dp))
+                                .padding(14.dp)
                         ) {
                             when (val state = lyricsUiState) {
                                 is LyricsUiState.Loading -> {
@@ -178,7 +177,7 @@ fun NowPlayingScreen(
                                         modifier = Modifier.fillMaxSize(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CircularProgressIndicator(color = CosmicTeal)
+                                        CircularProgressIndicator(color = EmeraldGreenBright)
                                     }
                                 }
                                 is LyricsUiState.Success -> {
@@ -198,14 +197,14 @@ fun NowPlayingScreen(
                                             Icon(
                                                 imageVector = Icons.Default.MusicOff,
                                                 contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                tint = TextMediumEmphasis,
                                                 modifier = Modifier.size(48.dp)
                                             )
                                             Spacer(modifier = Modifier.height(12.dp))
                                             Text(
                                                 text = "Lyrics not available for this track",
                                                 style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                color = TextMediumEmphasis,
                                                 textAlign = TextAlign.Center
                                             )
                                         }
@@ -218,7 +217,7 @@ fun NowPlayingScreen(
                                     ) {
                                         Text(
                                             text = "Tap to load lyrics",
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = TextMediumEmphasis
                                         )
                                     }
                                 }
@@ -230,7 +229,7 @@ fun NowPlayingScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
-                                .padding(12.dp),
+                                .padding(8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             AsyncImage(
@@ -239,16 +238,17 @@ fun NowPlayingScreen(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .shadow(elevation = 16.dp, shape = RoundedCornerShape(16.dp))
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .shadow(elevation = 24.dp, shape = RoundedCornerShape(24.dp), ambientColor = EmeraldGreenBright)
+                                    .clip(RoundedCornerShape(24.dp))
                                     .background(DarkSurfaceVariant)
+                                    .border(1.dp, DarkBorderSubtle, RoundedCornerShape(24.dp))
                             )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Track Information & Favorite Button Row
             Row(
@@ -270,7 +270,7 @@ fun NowPlayingScreen(
                         Text(
                             text = track.artistName,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = TextMediumEmphasis,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, fill = false)
@@ -294,13 +294,13 @@ fun NowPlayingScreen(
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) CosmicTeal else Color.White,
+                        tint = if (isFavorite) EmeraldGreenBright else Color.White,
                         modifier = Modifier.size(28.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Seekbar Slider
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -316,8 +316,8 @@ fun NowPlayingScreen(
                         isUserSeeking = false
                     },
                     colors = SliderDefaults.colors(
-                        thumbColor = CosmicTeal,
-                        activeTrackColor = CosmicTeal,
+                        thumbColor = EmeraldGreenBright,
+                        activeTrackColor = EmeraldGreenBright,
                         inactiveTrackColor = DarkSurfaceVariant
                     ),
                     modifier = Modifier.fillMaxWidth()
@@ -330,12 +330,12 @@ fun NowPlayingScreen(
                     Text(
                         text = formatTime(currentPosition),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = TextMediumEmphasis
                     )
                     Text(
                         text = formatTime(playerState.durationMs),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = TextMediumEmphasis
                     )
                 }
             }
@@ -353,7 +353,7 @@ fun NowPlayingScreen(
                     Icon(
                         imageVector = Icons.Default.Shuffle,
                         contentDescription = "Shuffle",
-                        tint = if (playerState.isShuffle) CosmicTeal else Color.LightGray,
+                        tint = if (playerState.isShuffle) EmeraldGreenBright else Color.LightGray,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -376,14 +376,15 @@ fun NowPlayingScreen(
                 val isPlaying = playerState.status == PlaybackStatus.PLAYING
                 Box(
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(68.dp)
                         .clip(CircleShape)
-                        .background(CosmicTeal),
+                        .background(EmeraldGreenBright)
+                        .shadow(elevation = 12.dp, shape = CircleShape, ambientColor = EmeraldGreenBright),
                     contentAlignment = Alignment.Center
                 ) {
                     IconButton(
                         onClick = { viewModel.togglePlayPause() },
-                        modifier = Modifier.size(64.dp)
+                        modifier = Modifier.size(68.dp)
                     ) {
                         if (isBuffering) {
                             CircularProgressIndicator(
@@ -396,7 +397,7 @@ fun NowPlayingScreen(
                                 imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                                 contentDescription = if (isPlaying) "Pause" else "Play",
                                 tint = Color.Black,
-                                modifier = Modifier.size(36.dp)
+                                modifier = Modifier.size(38.dp)
                             )
                         }
                     }
@@ -432,7 +433,7 @@ fun NowPlayingScreen(
                     }
                     val tint = when (playerState.repeatState) {
                         RepeatState.OFF -> Color.LightGray
-                        else -> CosmicTeal
+                        else -> EmeraldGreenBright
                     }
                     Icon(
                         imageVector = icon,
@@ -456,7 +457,7 @@ fun NowPlayingScreen(
                     Icon(
                         imageVector = Icons.Default.Lyrics,
                         contentDescription = "Lyrics",
-                        tint = if (isLyricsViewActive) CosmicTeal else Color.LightGray,
+                        tint = if (isLyricsViewActive) EmeraldGreenBright else Color.LightGray,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -466,7 +467,7 @@ fun NowPlayingScreen(
                     Icon(
                         imageVector = Icons.Default.Equalizer,
                         contentDescription = "Equalizer",
-                        tint = if (equalizerState.isEnabled) CosmicTeal else Color.LightGray,
+                        tint = if (equalizerState.isEnabled) EmeraldGreenBright else Color.LightGray,
                         modifier = Modifier.size(24.dp)
                     )
                 }

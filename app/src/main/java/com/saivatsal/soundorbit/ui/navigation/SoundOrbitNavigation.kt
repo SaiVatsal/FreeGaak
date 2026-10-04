@@ -35,7 +35,7 @@ import com.saivatsal.soundorbit.ui.search.SearchScreen
 import com.saivatsal.soundorbit.ui.search.SearchViewModel
 import com.saivatsal.soundorbit.ui.settings.SettingsScreen
 import com.saivatsal.soundorbit.ui.settings.SettingsViewModel
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurface
 import com.saivatsal.soundorbit.ui.theme.OledBlack
 
@@ -90,21 +90,21 @@ fun SoundOrbitApp(
                                         Icon(
                                             it,
                                             contentDescription = screen.title,
-                                            tint = if (selected) CosmicTeal else Color.Gray
+                                            tint = if (selected) EmeraldGreenBright else Color.Gray
                                         )
                                     }
                                 },
                                 label = {
                                     Text(
                                         screen.title,
-                                        color = if (selected) CosmicTeal else Color.Gray
+                                        color = if (selected) EmeraldGreenBright else Color.Gray
                                     )
                                 },
                                 selected = selected,
                                 colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = CosmicTeal.copy(alpha = 0.15f),
-                                    selectedIconColor = CosmicTeal,
-                                    selectedTextColor = CosmicTeal,
+                                    indicatorColor = EmeraldGreenBright.copy(alpha = 0.15f),
+                                    selectedIconColor = EmeraldGreenBright,
+                                    selectedTextColor = EmeraldGreenBright,
                                     unselectedIconColor = Color.Gray,
                                     unselectedTextColor = Color.Gray
                                 ),

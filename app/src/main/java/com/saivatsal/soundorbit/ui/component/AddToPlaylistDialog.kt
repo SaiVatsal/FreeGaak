@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.saivatsal.soundorbit.core.model.Playlist
 import com.saivatsal.soundorbit.core.model.Track
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurface
 
 @Composable
@@ -39,7 +39,7 @@ fun AddToPlaylistDialog(
                 Icon(
                     imageVector = Icons.Default.PlaylistAdd,
                     contentDescription = null,
-                    tint = CosmicTeal,
+                    tint = EmeraldGreenBright,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
@@ -60,8 +60,8 @@ fun AddToPlaylistDialog(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CosmicTeal,
-                            focusedLabelColor = CosmicTeal
+                            focusedBorderColor = EmeraldGreenBright,
+                            focusedLabelColor = EmeraldGreenBright
                         )
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -74,7 +74,7 @@ fun AddToPlaylistDialog(
                         },
                         enabled = newPlaylistName.isNotBlank(),
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = CosmicTeal, contentColor = Color.Black)
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreenBright, contentColor = Color.Black)
                     ) {
                         Text("Create & Add", fontWeight = FontWeight.Bold)
                     }
@@ -89,14 +89,14 @@ fun AddToPlaylistDialog(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            tint = CosmicTeal,
+                            tint = EmeraldGreenBright,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "New Playlist",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = CosmicTeal,
+                            color = EmeraldGreenBright,
                             fontWeight = FontWeight.SemiBold
                         )
                     }

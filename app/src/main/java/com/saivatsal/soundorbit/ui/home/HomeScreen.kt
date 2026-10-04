@@ -1,6 +1,7 @@
 package com.saivatsal.soundorbit.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,9 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,10 +28,8 @@ import coil3.compose.AsyncImage
 import com.saivatsal.soundorbit.core.database.entity.ArtistPlayCount
 import com.saivatsal.soundorbit.core.model.Track
 import com.saivatsal.soundorbit.ui.component.SourceBadge
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
-import com.saivatsal.soundorbit.ui.theme.DarkSurface
-import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
-import com.saivatsal.soundorbit.ui.theme.OledBlack
+import com.saivatsal.soundorbit.ui.theme.*
+import java.util.Calendar
 
 @Composable
 fun HomeScreen(
@@ -46,6 +43,15 @@ fun HomeScreen(
     val topArtists by viewModel.topArtists.collectAsState()
     val favorites by viewModel.favoriteTracks.collectAsState()
 
+    val greeting = remember {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        when (hour) {
+            in 4..11 -> "Good morning"
+            in 12..16 -> "Good afternoon"
+            else -> "Good evening"
+        }
+    }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -53,7 +59,7 @@ fun HomeScreen(
             .padding(bottom = 80.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
-        // Top Header
+        // Top Header with Personalized Greeting & User Avatar
         item {
             Row(
                 modifier = Modifier
@@ -63,53 +69,171 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "Sound Orbit",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Black,
-                        color = CosmicTeal
-                    )
-                    Text(
-                        text = "Your Private Universe of Sound",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape)
+                            .background(DarkSurfaceVariant)
+                            .border(1.5.dp, EmeraldGreenBright, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile",
+                            tint = EmeraldGreenBright,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Text(
+                            text = greeting,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Sound Orbit",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = EmeraldGreenBright,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
 
-                IconButton(onClick = onNavigateToSettings) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = Color.White
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }
 
-        // Daily Mix Hero Card
+        // Quick Access 2x2 Grid
         item {
-            DailyMixCard(
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    QuickAccessCard(
+                        title = "Daily Orbit Mix",
+                        icon = Icons.Default.AutoAwesome,
+                        gradient = listOf(Color(0xFF00B050), Color(0xFF003830)),
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            val mixTracks = (favorites + recentlyPlayed + feedState.spotifyGlobalTrending + feedState.spotifyIndiaTrending + feedState.deezerTrending)
+                                .distinctBy { it.compositeKey }
+                                .shuffled()
+                                .take(30)
+                            if (mixTracks.isNotEmpty()) viewModel.playTrackList(mixTracks)
+                        }
+                    )
+                    QuickAccessCard(
+                        title = "Liked Songs",
+                        icon = Icons.Default.Favorite,
+                        gradient = listOf(Color(0xFF8B5CF6), Color(0xFF3B1E78)),
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            if (favorites.isNotEmpty()) viewModel.playTrackList(favorites)
+                        }
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    QuickAccessCard(
+                        title = "India Top 50",
+                        icon = Icons.Default.Whatshot,
+                        gradient = listOf(Color(0xFFFF6B6B), Color(0xFF6B1D2F)),
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            if (feedState.spotifyIndiaTrending.isNotEmpty()) {
+                                viewModel.playTrackList(feedState.spotifyIndiaTrending)
+                            }
+                        }
+                    )
+                    QuickAccessCard(
+                        title = "Recently Played",
+                        icon = Icons.Default.History,
+                        gradient = listOf(Color(0xFF00BFA5), Color(0xFF004D40)),
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            if (recentlyPlayed.isNotEmpty()) {
+                                viewModel.playTrackList(recentlyPlayed)
+                            }
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        // Hero Featured Daily Mix Card
+        item {
+            DailyMixHeroCard(
                 favoritesCount = favorites.size,
                 historyCount = recentlyPlayed.size,
                 onPlayDailyMix = {
                     val mixTracks = (favorites + recentlyPlayed + feedState.spotifyGlobalTrending + feedState.spotifyIndiaTrending + feedState.deezerTrending + feedState.audiusTrending + feedState.jamendoTrending)
                         .distinctBy { it.compositeKey }
                         .shuffled()
-                        .take(25)
+                        .take(30)
                     if (mixTracks.isNotEmpty()) {
                         viewModel.playTrackList(mixTracks)
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Mood & Genre Explore Quick Cards
+        item {
+            SectionHeader(title = "Explore Moods & Genres", icon = Icons.Default.Category)
+            Spacer(modifier = Modifier.height(10.dp))
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                val moods = listOf(
+                    MoodItem("Chill", listOf(Color(0xFF2E86DE), Color(0xFF54A0FF)), Icons.Default.Spa),
+                    MoodItem("Energy", listOf(Color(0xFFFF9F43), Color(0xFFEE5253)), Icons.Default.Bolt),
+                    MoodItem("Workout", listOf(Color(0xFF10AC84), Color(0xFF1DD1A1)), Icons.Default.FitnessCenter),
+                    MoodItem("Bollywood", listOf(Color(0xFFFF6B6B), Color(0xFFFF9FF3)), Icons.Default.MusicNote),
+                    MoodItem("Focus", listOf(Color(0xFF5F27CD), Color(0xFF341F97)), Icons.Default.SelfImprovement),
+                    MoodItem("Party", listOf(Color(0xFFFF5252), Color(0xFFFF793F)), Icons.Default.Celebration),
+                    MoodItem("Romantic", listOf(Color(0xFFE84393), Color(0xFFFD79A8)), Icons.Default.Favorite)
+                )
+                items(moods) { mood ->
+                    MoodCard(mood = mood, onClick = {
+                        val tracks = (feedState.deezerGenreHits + feedState.spotifyIndiaTrending + feedState.spotifyGlobalTrending)
+                            .shuffled()
+                        if (tracks.isNotEmpty()) viewModel.playTrackList(tracks)
+                    })
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         // Recently Played Carousel
         if (recentlyPlayed.isNotEmpty()) {
             item {
                 SectionHeader(title = "Recently Played", icon = Icons.Default.History)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -129,7 +253,7 @@ fun HomeScreen(
         if (heavyRotation.isNotEmpty()) {
             item {
                 SectionHeader(title = "Heavy Rotation", icon = Icons.Default.Repeat)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -145,14 +269,14 @@ fun HomeScreen(
             }
         }
 
-        // Top Artists Chips
+        // Top Artists
         if (topArtists.isNotEmpty()) {
             item {
                 SectionHeader(title = "Top Artists", icon = Icons.Default.Person)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     items(topArtists) { artist ->
                         ArtistAvatarItem(artist = artist)
@@ -171,7 +295,7 @@ fun HomeScreen(
                         .height(180.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = CosmicTeal)
+                    CircularProgressIndicator(color = EmeraldGreenBright)
                 }
             }
         } else {
@@ -179,7 +303,7 @@ fun HomeScreen(
             if (feedState.spotifyGlobalTrending.isNotEmpty()) {
                 item {
                     SectionHeader(title = "Spotify Top 50 Global", icon = Icons.Default.TrendingUp)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -199,7 +323,7 @@ fun HomeScreen(
             if (feedState.spotifyIndiaTrending.isNotEmpty()) {
                 item {
                     SectionHeader(title = "Spotify Top 50 India", icon = Icons.Default.Whatshot)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -219,7 +343,7 @@ fun HomeScreen(
             if (feedState.deezerTrending.isNotEmpty()) {
                 item {
                     SectionHeader(title = "Top Charts on Deezer", icon = Icons.Default.Album)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -238,8 +362,8 @@ fun HomeScreen(
             // Deezer Genre Hits (Pop & New Releases) Carousel
             if (feedState.deezerGenreHits.isNotEmpty()) {
                 item {
-                    SectionHeader(title = "Pop & New Releases (Deezer)", icon = Icons.Default.MusicNote)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    SectionHeader(title = "Pop & New Releases", icon = Icons.Default.MusicNote)
+                    Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -259,7 +383,7 @@ fun HomeScreen(
             if (feedState.audiusTrending.isNotEmpty()) {
                 item {
                     SectionHeader(title = "Trending on Audius", icon = Icons.Default.Radio)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -279,7 +403,7 @@ fun HomeScreen(
             if (feedState.jamendoTrending.isNotEmpty()) {
                 item {
                     SectionHeader(title = "Top Hits on Jamendo", icon = Icons.Default.Star)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -299,7 +423,7 @@ fun HomeScreen(
             if (feedState.localRecent.isNotEmpty()) {
                 item {
                     SectionHeader(title = "On Device Audio", icon = Icons.Default.Folder)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -332,7 +456,7 @@ private fun SectionHeader(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = CosmicTeal,
+            tint = EmeraldGreenBright,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -346,15 +470,62 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun DailyMixCard(
+private fun QuickAccessCard(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    gradient: List<Color>,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .height(56.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onClick() },
+        color = DarkSurfaceVariant,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(Brush.linearGradient(gradient)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun DailyMixHeroCard(
     favoritesCount: Int,
     historyCount: Int,
     onPlayDailyMix: () -> Unit
 ) {
     val gradient = Brush.horizontalGradient(
         colors = listOf(
-            CosmicTeal.copy(alpha = 0.85f),
-            Color(0xFF006699)
+            EmeraldGreenDark,
+            Color(0xFF004D40),
+            ObsidianBlack
         )
     )
 
@@ -362,15 +533,16 @@ private fun DailyMixCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .clickable { onPlayDailyMix() },
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(20.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(gradient)
-                .padding(20.dp)
+                .border(1.dp, EmeraldGreenBright.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                .padding(22.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -378,17 +550,30 @@ private fun DailyMixCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
+                    Surface(
+                        color = EmeraldGreenBright.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "MADE FOR YOU",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = EmeraldGreenBright,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Daily Orbit Mix",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
-                        color = Color.Black
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Tailored mix from your listening cosmos ($favoritesCount favorites & history)",
+                        text = "Personalized mix based on your listening cosmos ($favoritesCount favorites & history)",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Black.copy(alpha = 0.8f)
+                        color = Color.LightGray
                     )
                 }
 
@@ -396,19 +581,63 @@ private fun DailyMixCard(
 
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(52.dp)
                         .clip(CircleShape)
-                        .background(Color.Black),
+                        .background(EmeraldGreenBright),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = "Play Daily Mix",
-                        tint = CosmicTeal,
-                        modifier = Modifier.size(28.dp)
+                        tint = Color.Black,
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
+        }
+    }
+}
+
+data class MoodItem(
+    val name: String,
+    val colors: List<Color>,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)
+
+@Composable
+private fun MoodCard(
+    mood: MoodItem,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .width(115.dp)
+            .height(72.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Brush.linearGradient(mood.colors))
+                .padding(10.dp)
+        ) {
+            Icon(
+                imageVector = mood.icon,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.35f),
+                modifier = Modifier
+                    .size(32.dp)
+                    .align(Alignment.BottomEnd)
+            )
+            Text(
+                text = mood.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.align(Alignment.TopStart)
+            )
         }
     }
 }
@@ -420,14 +649,15 @@ private fun TrackCard(
 ) {
     Column(
         modifier = Modifier
-            .width(136.dp)
+            .width(140.dp)
             .clickable { onClick() }
     ) {
         Box(
             modifier = Modifier
-                .size(136.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .size(140.dp)
+                .clip(RoundedCornerShape(16.dp))
                 .background(DarkSurfaceVariant)
+                .border(0.8.dp, DarkBorderSubtle, RoundedCornerShape(16.dp))
         ) {
             AsyncImage(
                 model = track.artworkUrl,
@@ -445,7 +675,7 @@ private fun TrackCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = track.title,
@@ -459,7 +689,7 @@ private fun TrackCard(
         Text(
             text = track.artistName,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = TextMediumEmphasis,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -474,15 +704,16 @@ private fun ArtistAvatarItem(artist: ArtistPlayCount) {
     ) {
         Box(
             modifier = Modifier
-                .size(72.dp)
+                .size(76.dp)
                 .clip(CircleShape)
-                .background(DarkSurfaceVariant),
+                .background(DarkSurfaceVariant)
+                .border(1.5.dp, EmeraldGreenBright.copy(alpha = 0.7f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = artist.artistName,
-                tint = CosmicTeal,
+                tint = EmeraldGreenBright,
                 modifier = Modifier.size(36.dp)
             )
         }
@@ -492,7 +723,7 @@ private fun ArtistAvatarItem(artist: ArtistPlayCount) {
         Text(
             text = artist.artistName,
             style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             color = Color.White,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -501,7 +732,7 @@ private fun ArtistAvatarItem(artist: ArtistPlayCount) {
         Text(
             text = "${artist.playCount} plays",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = TextMediumEmphasis
         )
     }
 }

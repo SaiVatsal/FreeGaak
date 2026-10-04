@@ -1,6 +1,7 @@
 package com.saivatsal.soundorbit.ui.library
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,10 +24,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.saivatsal.soundorbit.core.model.Playlist
 import com.saivatsal.soundorbit.ui.component.TrackItem
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
-import com.saivatsal.soundorbit.ui.theme.DarkSurface
-import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
-import com.saivatsal.soundorbit.ui.theme.OledBlack
+import com.saivatsal.soundorbit.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +65,7 @@ fun LibraryScreen(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Create Playlist",
-                    tint = CosmicTeal,
+                    tint = EmeraldGreenBright,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -77,11 +75,11 @@ fun LibraryScreen(
         TabRow(
             selectedTabIndex = selectedTab.ordinal,
             containerColor = DarkSurface,
-            contentColor = CosmicTeal,
+            contentColor = EmeraldGreenBright,
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
                     modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab.ordinal]),
-                    color = CosmicTeal
+                    color = EmeraldGreenBright
                 )
             }
         ) {
@@ -99,7 +97,7 @@ fun LibraryScreen(
                         Text(
                             text = title,
                             fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selectedTab == tab) CosmicTeal else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (selectedTab == tab) EmeraldGreenBright else TextMediumEmphasis
                         )
                     }
                 )
@@ -160,8 +158,8 @@ fun LibraryScreen(
                             ) {
                                 Button(
                                     onClick = { viewModel.playTrackList(favorites) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = CosmicTeal, contentColor = Color.Black),
-                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreenBright, contentColor = Color.Black),
+                                    shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Icon(Icons.Default.PlayArrow, contentDescription = null)
@@ -171,7 +169,8 @@ fun LibraryScreen(
 
                                 OutlinedButton(
                                     onClick = { viewModel.playTrackList(favorites.shuffled()) },
-                                    shape = RoundedCornerShape(8.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Icon(Icons.Default.Shuffle, contentDescription = null)
@@ -240,7 +239,7 @@ fun LibraryScreen(
             AlertDialog(
                 onDismissRequest = { showCreatePlaylistDialog = false },
                 containerColor = DarkSurface,
-                title = { Text("New Playlist", fontWeight = FontWeight.Bold) },
+                title = { Text("New Playlist", fontWeight = FontWeight.Bold, color = Color.White) },
                 text = {
                     Column {
                         OutlinedTextField(
@@ -248,6 +247,7 @@ fun LibraryScreen(
                             onValueChange = { playlistName = it },
                             label = { Text("Name") },
                             singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -256,6 +256,7 @@ fun LibraryScreen(
                             onValueChange = { playlistDesc = it },
                             label = { Text("Description (Optional)") },
                             singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -269,7 +270,7 @@ fun LibraryScreen(
                             }
                         },
                         enabled = playlistName.isNotBlank(),
-                        colors = ButtonDefaults.buttonColors(containerColor = CosmicTeal, contentColor = Color.Black)
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreenBright, contentColor = Color.Black)
                     ) {
                         Text("Create", fontWeight = FontWeight.Bold)
                     }
@@ -295,8 +296,9 @@ private fun PlaylistItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(DarkSurfaceVariant)
+            .border(0.8.dp, DarkBorderSubtle, RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -304,7 +306,7 @@ private fun PlaylistItem(
         Box(
             modifier = Modifier
                 .size(56.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(DarkSurface),
             contentAlignment = Alignment.Center
         ) {
@@ -319,7 +321,7 @@ private fun PlaylistItem(
                 Icon(
                     imageVector = Icons.Default.QueueMusic,
                     contentDescription = null,
-                    tint = CosmicTeal,
+                    tint = EmeraldGreenBright,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -340,7 +342,7 @@ private fun PlaylistItem(
             Text(
                 text = "${playlist.trackCount} tracks",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = TextMediumEmphasis
             )
         }
 
@@ -349,7 +351,7 @@ private fun PlaylistItem(
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = "Options",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = TextMediumEmphasis
                 )
             }
 
@@ -390,7 +392,7 @@ private fun EmptyState(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = CosmicTeal,
+                tint = EmeraldGreenBright,
                 modifier = Modifier.size(56.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -404,7 +406,7 @@ private fun EmptyState(
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = TextMediumEmphasis,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
@@ -412,8 +414,8 @@ private fun EmptyState(
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
                     onClick = onAction,
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicTeal, contentColor = Color.Black),
-                    shape = RoundedCornerShape(8.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreenBright, contentColor = Color.Black),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(actionLabel, fontWeight = FontWeight.Bold)
                 }

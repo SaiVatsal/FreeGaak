@@ -30,6 +30,7 @@ val DarkBorderSubtle = Color(0x33FFFFFF)
 // Text Colors
 val TextHighEmphasis = Color(0xFFFFFFFF)
 val TextMediumEmphasis = Color(0xFFB0B7C3)
+val TextLowEmphasis = Color(0xFF6B7280)
 val TextDisabled = Color(0xFF6B7280)
 
 // Functional Colors

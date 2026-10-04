@@ -25,7 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.saivatsal.soundorbit.core.lyrics.model.Lyrics
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 
 @Composable
 fun LyricsView(
@@ -47,7 +47,7 @@ fun LyricsView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator(color = CosmicTeal)
+                    CircularProgressIndicator(color = EmeraldGreenBright)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Loading lyrics...",
@@ -83,7 +83,7 @@ fun LyricsView(
                     Icon(
                         imageVector = Icons.Default.MusicNote,
                         contentDescription = null,
-                        tint = CosmicTeal,
+                        tint = EmeraldGreenBright,
                         modifier = Modifier.size(56.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -115,7 +115,7 @@ fun LyricsView(
                     itemsIndexed(lyrics.syncedLyrics) { index, line ->
                         val isCurrent = index == activeIndex
                         val textColor by animateColorAsState(
-                            targetValue = if (isCurrent) CosmicTeal else Color.White,
+                            targetValue = if (isCurrent) EmeraldGreenBright else Color.White,
                             label = "lyricTextColor"
                         )
                         val textAlpha by animateFloatAsState(

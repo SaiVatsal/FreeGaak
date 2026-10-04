@@ -27,7 +27,7 @@ import com.saivatsal.soundorbit.core.player.AudioPlayer
 import com.saivatsal.soundorbit.core.repository.FavoritesRepository
 import com.saivatsal.soundorbit.core.repository.PlaylistRepository
 import com.saivatsal.soundorbit.ui.component.SourceBadge
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
 import com.saivatsal.soundorbit.ui.theme.OledBlack
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -141,7 +141,7 @@ fun PlaylistDetailScreen(
                     Text(
                         text = "${tracks.size} tracks",
                         style = MaterialTheme.typography.bodySmall,
-                        color = CosmicTeal,
+                        color = EmeraldGreenBright,
                         fontWeight = FontWeight.Bold
                     )
 
@@ -154,7 +154,7 @@ fun PlaylistDetailScreen(
                         ) {
                             Button(
                                 onClick = { viewModel.playTrackList(0) },
-                                colors = ButtonDefaults.buttonColors(containerColor = CosmicTeal, contentColor = Color.Black),
+                                colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreenBright, contentColor = Color.Black),
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.weight(1f)
                             ) {

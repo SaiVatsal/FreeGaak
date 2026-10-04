@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.saivatsal.soundorbit.core.player.SleepTimerState
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurface
 
 @Composable
@@ -46,7 +46,7 @@ fun SleepTimerDialog(
                 Icon(
                     imageVector = Icons.Default.Bedtime,
                     contentDescription = null,
-                    tint = CosmicTeal,
+                    tint = EmeraldGreenBright,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
@@ -71,7 +71,7 @@ fun SleepTimerDialog(
                     Text(
                         text = formattedTime,
                         style = MaterialTheme.typography.headlineSmall,
-                        color = CosmicTeal,
+                        color = EmeraldGreenBright,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
@@ -107,7 +107,7 @@ fun SleepTimerDialog(
                             onCheckedChange = { fadeOutEnabled = it },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.Black,
-                                checkedTrackColor = CosmicTeal
+                                checkedTrackColor = EmeraldGreenBright
                             )
                         )
                     }

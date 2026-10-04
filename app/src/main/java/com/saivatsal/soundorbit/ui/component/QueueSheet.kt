@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.saivatsal.soundorbit.core.model.Track
 import com.saivatsal.soundorbit.core.model.SourceId
-import com.saivatsal.soundorbit.ui.theme.CosmicTeal
+import com.saivatsal.soundorbit.ui.theme.EmeraldGreenBright
 import com.saivatsal.soundorbit.ui.theme.DarkSurface
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
 
@@ -60,7 +60,7 @@ fun QueueSheet(
                     Icon(
                         imageVector = Icons.Default.QueueMusic,
                         contentDescription = null,
-                        tint = CosmicTeal,
+                        tint = EmeraldGreenBright,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
@@ -115,7 +115,7 @@ fun QueueSheet(
                                 Icon(
                                     imageVector = Icons.Default.GraphicEq,
                                     contentDescription = "Currently Playing",
-                                    tint = CosmicTeal,
+                                    tint = EmeraldGreenBright,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -146,7 +146,7 @@ fun QueueSheet(
                                     text = track.title,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isCurrent) CosmicTeal else Color.White,
+                                    color = if (isCurrent) EmeraldGreenBright else Color.White,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
