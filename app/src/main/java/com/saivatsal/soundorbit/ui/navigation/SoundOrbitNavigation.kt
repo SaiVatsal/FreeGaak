@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -71,20 +73,20 @@ fun SoundOrbitApp(
     Scaffold(
         containerColor = OledBlack,
         bottomBar = {
-            if (showBottomBar) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    // MiniPlayer docked above Bottom Navigation
-                    if (playerState.currentTrack != null) {
-                        MiniPlayer(
-                            playerState = playerState,
-                            isFavorite = isFavorite,
-                            onExpandNowPlaying = { isNowPlayingExpanded = true },
-                            onPlayPause = { playerViewModel.togglePlayPause() },
-                            onNext = { playerViewModel.next() },
-                            onToggleFavorite = { playerViewModel.toggleFavorite() }
-                        )
-                    }
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // MiniPlayer docked above Bottom Navigation on tabs or standalone on detail screens
+                if (playerState.currentTrack != null) {
+                    MiniPlayer(
+                        playerState = playerState,
+                        isFavorite = isFavorite,
+                        onExpandNowPlaying = { isNowPlayingExpanded = true },
+                        onPlayPause = { playerViewModel.togglePlayPause() },
+                        onNext = { playerViewModel.next() },
+                        onToggleFavorite = { playerViewModel.toggleFavorite() }
+                    )
+                }
 
+                if (showBottomBar) {
                     NavigationBar(
                         containerColor = DarkSurface,
                         tonalElevation = 8.dp
@@ -129,6 +131,8 @@ fun SoundOrbitApp(
                             )
                         }
                     }
+                } else if (playerState.currentTrack != null) {
+                    Spacer(modifier = Modifier.navigationBarsPadding())
                 }
             }
         }
@@ -301,21 +305,6 @@ fun SoundOrbitApp(
                         onOpenEqualizer = { showDirectEqualizerSheet = true }
                     )
                 }
-            }
-
-            // If on details screens without bottom bar, show floating MiniPlayer at the bottom
-            if (!showBottomBar && playerState.currentTrack != null) {
-                MiniPlayer(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 8.dp),
-                    playerState = playerState,
-                    isFavorite = isFavorite,
-                    onExpandNowPlaying = { isNowPlayingExpanded = true },
-                    onPlayPause = { playerViewModel.togglePlayPause() },
-                    onNext = { playerViewModel.next() },
-                    onToggleFavorite = { playerViewModel.toggleFavorite() }
-                )
             }
 
             // Full-screen Now Playing Overlay

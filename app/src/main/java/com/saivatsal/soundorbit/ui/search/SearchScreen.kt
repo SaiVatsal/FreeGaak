@@ -245,9 +245,7 @@ fun SearchScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 80.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
                 items(POPULAR_GENRES) { genre ->
                     GenreCard(
@@ -260,18 +258,14 @@ fun SearchScreen(
             // Search Results
             if (uiState.isSearching) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 80.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(color = EmeraldGreenBright)
                 }
             } else if (uiState.tracks.isEmpty() && uiState.artists.isEmpty() && uiState.albums.isEmpty() && uiState.playlists.isEmpty()) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 80.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -291,10 +285,8 @@ fun SearchScreen(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 80.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     // Artists Section (if any)
                     if (uiState.artists.isNotEmpty() && (uiState.selectedFilter == SearchFilterType.ALL || uiState.selectedFilter == SearchFilterType.ARTISTS)) {

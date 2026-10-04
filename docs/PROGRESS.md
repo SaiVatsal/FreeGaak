@@ -51,6 +51,12 @@
   3. Relational Room Database Consistency: Fixed `PlaylistDao.kt` `getTrackCountForPlaylist` query to inner join `tracks` table with `playlist_tracks`, ensuring playlist card counts strictly match playlist detail track counts.
   4. AndroidX Media3 & Lint Hardening: Resolved all `UnsafeOptInUsageError` annotations in `PlaybackService.kt` (`@OptIn(UnstableApi::class, ExperimentalCoroutinesApi::class)`), achieving zero lint errors with `./gradlew lintDebug`.
   5. Full Test Verification & Production Release: 53/53 unit tests passing (100%), zero lint errors, compiled signed release APK `SoundOrbit-v1.2.0.apk` (5.23 MB) with V1/V2/V3 signatures, and deployed to Desktop.
+- 2026-10-04: UI Bug Fixes, Dynamic Insets, and MiniPlayer Layout Polish:
+  1. MiniPlayer Dynamic Layout & Inset Protection (Screenshot 13.jpg): Resolved list items being covered by the MiniPlayer across Search, Home, Library, Explore, and all 6 detail screens by hosting the MiniPlayer inside the unified root `Scaffold(bottomBar = { ... })` and switching content lists to dynamic `contentPadding = PaddingValues(bottom = 24.dp)` respecting the global `innerPadding`.
+  2. Now Playing Header & Touch Target Spacing (Screenshots 14.jpg & 15.jpg): Redesigned NowPlaying top navigation header with distinct 44dp circular touch targets for Collapse, Sleep Timer, and Queue sheet buttons with safe-area spacing and text truncation.
+  3. Lyrics Empty & Error State Presentation (Screenshot 16.jpg): Redesigned lyrics empty/error state with clear community source messaging and an instant "Show Album Art" action button.
+  4. Dynamic Music Pill Component: Created `DynamicMusicPill.kt` featuring a compact pill layout with dynamic 3-bar animated canvas equalizer waveforms.
+  5. Full Test Verification & Release Deployment: 53/53 unit tests passing (100%), verified release build (`assembleRelease`), generated signed `SoundOrbit-v1.2.0.apk` (5.23 MB), and deployed to Desktop (`C:\Users\Vatsal's\Desktop\SoundOrbit-v1.2.0.apk`).
 
 
 

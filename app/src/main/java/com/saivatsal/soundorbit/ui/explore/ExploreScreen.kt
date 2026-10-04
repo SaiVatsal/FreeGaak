@@ -98,9 +98,8 @@ fun ExploreScreen(
             columns = GridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(bottom = 80.dp),
-            contentPadding = PaddingValues(16.dp),
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {

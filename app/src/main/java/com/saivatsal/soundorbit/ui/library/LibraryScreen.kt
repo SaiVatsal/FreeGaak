@@ -117,9 +117,7 @@ fun LibraryScreen(
                     )
                 } else {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(bottom = 80.dp),
+                        modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
@@ -143,10 +141,8 @@ fun LibraryScreen(
                     )
                 } else {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(bottom = 80.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
                         item {
                             // Play All & Shuffle Buttons
@@ -204,10 +200,8 @@ fun LibraryScreen(
                     )
                 } else {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(bottom = 80.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
                         itemsIndexed(localTracks) { index, track ->
                             TrackItem(

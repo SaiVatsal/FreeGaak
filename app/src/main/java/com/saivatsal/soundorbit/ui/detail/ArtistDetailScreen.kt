@@ -181,10 +181,8 @@ fun ArtistDetailScreen(
         } else {
             val details = uiState.details!!
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 80.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 // Artist Header Banner
                 item {

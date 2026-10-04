@@ -76,9 +76,8 @@ fun HomeScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(OledBlack)
-            .padding(bottom = 80.dp),
-        contentPadding = PaddingValues(bottom = 16.dp)
+            .background(OledBlack),
+        contentPadding = PaddingValues(bottom = 24.dp)
     ) {
         // Top Header with Personalized Greeting & User Avatar
         item {

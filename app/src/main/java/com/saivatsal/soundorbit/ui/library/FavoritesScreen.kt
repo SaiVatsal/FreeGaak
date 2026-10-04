@@ -130,9 +130,8 @@ fun FavoritesScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .padding(bottom = 80.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
+                    .padding(padding),
+                contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 item {
                     Row(

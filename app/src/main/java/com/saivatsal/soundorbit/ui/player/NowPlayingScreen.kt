@@ -5,6 +5,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -114,55 +115,95 @@ fun NowPlayingScreen(
                 .padding(horizontal = 24.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Navigation Bar
+            // Top Navigation Bar - Redesigned with safe-area spacing and distinct touch targets
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                    .padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onCollapse) {
+                // Collapse Button - Left side
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.1f))
+                        .clickable { onCollapse() }
+                        .padding(end = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Collapse",
+                        contentDescription = "Collapse Now Playing",
                         tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
+                // Center: "PLAYING FROM" + Source Name with proper spacing
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp)
                 ) {
                     Text(
                         text = "PLAYING FROM",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextMediumEmphasis,
-                        letterSpacing = 1.sp
+                        letterSpacing = 1.2.sp
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = track.sourceId.name,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = animatedAccent
+                        color = animatedAccent,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                Row {
-                    IconButton(onClick = { showSleepTimerDialog = true }) {
+                // Right Action Buttons - Sleep Timer & Queue with distinct touch targets
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Sleep Timer Button
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (sleepTimerState.isActive)
+                                    animatedAccent.copy(alpha = 0.2f)
+                                else
+                                    Color.White.copy(alpha = 0.1f)
+                            )
+                            .clickable { showSleepTimerDialog = true }
+                            .padding(start = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Bedtime,
-                            contentDescription = "Sleep Timer",
+                            contentDescription = if (sleepTimerState.isActive) "Sleep Timer Active" else "Sleep Timer",
                             tint = if (sleepTimerState.isActive) animatedAccent else Color.White,
                             modifier = Modifier.size(22.dp)
                         )
                     }
 
-                    IconButton(onClick = { showQueueSheet = true }) {
+                    // Queue Button
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                            .clickable { showQueueSheet = true },
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
                             imageVector = Icons.Default.QueueMusic,
-                            contentDescription = "Queue",
+                            contentDescription = "Playback Queue",
                             tint = Color.White,
                             modifier = Modifier.size(24.dp)
                         )
@@ -211,20 +252,52 @@ fun NowPlayingScreen(
                                         modifier = Modifier.fillMaxSize(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Icon(
-                                                imageVector = Icons.Default.MusicOff,
-                                                contentDescription = null,
-                                                tint = TextMediumEmphasis,
-                                                modifier = Modifier.size(48.dp)
-                                            )
-                                            Spacer(modifier = Modifier.height(12.dp))
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            modifier = Modifier.padding(24.dp)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(64.dp)
+                                                    .clip(CircleShape)
+                                                    .background(DarkSurfaceVariant),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.MusicOff,
+                                                    contentDescription = null,
+                                                    tint = TextMediumEmphasis,
+                                                    modifier = Modifier.size(32.dp)
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(16.dp))
                                             Text(
                                                 text = "Lyrics not available for this track",
                                                 style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Color.White,
+                                                textAlign = TextAlign.Center
+                                            )
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text(
+                                                text = "Synchronized lyrics couldn't be loaded from legal community sources.",
+                                                style = MaterialTheme.typography.bodySmall,
                                                 color = TextMediumEmphasis,
                                                 textAlign = TextAlign.Center
                                             )
+                                            Spacer(modifier = Modifier.height(20.dp))
+                                            FilledTonalButton(
+                                                onClick = { isLyricsViewActive = false },
+                                                colors = ButtonDefaults.filledTonalButtonColors(
+                                                    containerColor = DarkSurfaceVariant,
+                                                    contentColor = Color.White
+                                                ),
+                                                shape = RoundedCornerShape(12.dp)
+                                            ) {
+                                                Icon(Icons.Default.Album, contentDescription = null, modifier = Modifier.size(18.dp))
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Show Album Art", style = MaterialTheme.typography.labelMedium)
+                                            }
                                         }
                                     }
                                 }
@@ -233,10 +306,23 @@ fun NowPlayingScreen(
                                         modifier = Modifier.fillMaxSize(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(
-                                            text = "Tap to load lyrics",
-                                            color = TextMediumEmphasis
-                                        )
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            modifier = Modifier.padding(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.MicNone,
+                                                contentDescription = null,
+                                                tint = animatedAccent,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                            Text(
+                                                text = "Tap to load lyrics",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = TextMediumEmphasis
+                                            )
+                                        }
                                     }
                                 }
                             }
