@@ -1,0 +1,62 @@
+# API Verification Log
+
+Verified on: 2026-04-10
+
+## 1. Audius API
+- **Docs URL:** `https://docs.audius.co` / `https://docs.openaudio.org`
+- **Base URL:** `https://discoveryprovider.audius.co/v1/` (discovery node base) or `https://api.audius.co`
+- **Auth:** `app_name` query parameter (e.g. `?app_name=SoundOrbit`). Optional Bearer token for developer accounts.
+- **Key Endpoints:**
+  - Search tracks: `GET /v1/tracks/search?query={q}&app_name={app}&limit={l}&offset={o}`
+  - Trending tracks: `GET /v1/tracks/trending?app_name={app}&time={week|month|year|allTime}&genre={g}&limit={l}&offset={o}`
+  - Track details: `GET /v1/tracks/{track_id}?app_name={app}`
+  - Track stream: `GET /v1/tracks/{track_id}/stream?app_name={app}` (returns HTTP 302 redirect to content node CDN URL)
+  - Artist / User: `GET /v1/users/{user_id}?app_name={app}`
+  - Artist tracks: `GET /v1/users/{user_id}/tracks?app_name={app}`
+  - Playlist details: `GET /v1/playlists/{playlist_id}?app_name={app}`
+  - Playlist tracks: `GET /v1/playlists/{playlist_id}/tracks?app_name={app}`
+- **Rate Limits:** ~100 req/min per IP per discovery node.
+- **Attribution & Terms:** Open Audio Protocol. Must respect stream gating flags (`is_stream_gated`, `is_download_gated`).
+- **Status:** Active (v1).
+- **Conservative choices / rules:**
+  - Map gated tracks to `SourceError.Gated`.
+  - Declare `hasLanguageFilter = false`, `supportsSelectableQuality = false` in capabilities.
+
+## 2. Jamendo API
+- **Docs URL:** `https://developer.jamendo.com/v3.0`
+- **Base URL:** `https://api.jamendo.com/v3.0/`
+- **Auth:** `client_id` query parameter.
+- **Key Endpoints:**
+  - Search & Browse: `GET /v3.0/tracks/?client_id={id}&format=json&search={q}&type=single albumtrack&audioformat={fmt}&include=licenses+musicinfo+stats+lyrics`
+  - Audio formats: `mp31` (96k), `mp32` (VBR high), `ogg`, `flac`.
+  - Language filter: `lang={code}` or `lang[]={code}` (2-letter ISO code).
+  - License info: `include=licenses` returns `license_ccurl`.
+  - Download eligibility: check `audiodownload_allowed == true` and `audiodownload` URL is non-empty.
+- **Rate Limits:** 35,000 requests/month on free tier.
+- **Attribution & Terms:** Non-commercial use only. Must display CC license name + URL and artist credit. Must provide backlink to Jamendo. No caching of audio.
+- **Status:** Active (v3.0).
+
+## 3. LRCLIB (Synced Lyrics)
+- **Docs URL:** `https://lrclib.net` / `github.com/tranxuanthang/lrclib`
+- **Base URL:** `https://lrclib.net/api`
+- **Auth:** None for read.
+- **Key Endpoints:**
+  - Exact match: `GET /api/get?track_name={title}&artist_name={artist}&album_name={album}&duration={sec}`
+  - Fallback search: `GET /api/search?q={query}&track_name={title}&artist_name={artist}`
+  - Response contains: `syncedLyrics` (LRC format: `[mm:ss.xx] text`), `plainLyrics`, `instrumental` (boolean).
+- **Rate Limits:** Reasonable usage. Send descriptive `User-Agent: SoundOrbit/1.0.0 (contact@example.com)`.
+- **Status:** Active.
+
+## 4. MusicBrainz API (Metadata Enrichment)
+- **Docs URL:** `https://musicbrainz.org/doc/MusicBrainz_API`
+- **Base URL:** `https://musicbrainz.org/ws/2/`
+- **Auth:** None for read queries.
+- **Rate Limits:** Strictly 1 request/second for the whole app. Enforced via mutex rate limiter.
+- **User-Agent:** Mandatory `SoundOrbit/1.0.0 ( {CONTACT_EMAIL} )`.
+- **Rule:** If `CONTACT_EMAIL` is empty in `local.properties`, MusicBrainz enrichment is automatically DISABLED to prevent anonymous requests.
+- **Status:** Active (ws/2).
+
+## 5. Spotify Web API + App Remote SDK (Optional)
+- **Status:** Optional source, disabled by default. Off until `SPOTIFY_CLIENT_ID` is set in `local.properties`.
+- **Auth:** PKCE OAuth flow for Web API browse/search. Spotify Android App Remote SDK for playback.
+- **Limits:** Requires Spotify Premium, installed Spotify app, max 5 allowlisted users in developer mode.
