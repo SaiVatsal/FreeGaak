@@ -65,7 +65,7 @@ fun HomeScreen(
             ) {
                 Column {
                     Text(
-                        text = "SoundOrbit",
+                        text = "Sound Orbit",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Black,
                         color = CosmicTeal

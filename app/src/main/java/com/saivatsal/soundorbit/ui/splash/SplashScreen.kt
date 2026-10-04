@@ -1,5 +1,8 @@
 package com.saivatsal.soundorbit.ui.splash
 
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.annotation.OptIn
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -24,9 +27,19 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.RawResourceDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
+import com.saivatsal.soundorbit.R
 import com.saivatsal.soundorbit.ui.theme.CosmicTeal
 import com.saivatsal.soundorbit.ui.theme.DarkSurfaceVariant
 import com.saivatsal.soundorbit.ui.theme.NebulaCoral
@@ -35,16 +48,50 @@ import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.sin
 
+@OptIn(UnstableApi::class)
 @Composable
 fun SplashScreen(
     onSplashFinished: () -> Unit,
     modifier: Modifier = Modifier,
-    splashDurationMs: Long = 2300L
+    splashDurationMs: Long = 2600L
 ) {
+    val context = LocalContext.current
     val entranceAlpha = remember { Animatable(0f) }
-    val entranceScale = remember { Animatable(0.8f) }
+    val entranceScale = remember { Animatable(0.85f) }
+    var isVideoReady by remember { mutableStateOf(false) }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "SplashDiscAnimation")
+    // ExoPlayer dedicated for the splash video animation
+    val splashPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            try {
+                val rawUri = RawResourceDataSource.buildRawResourceUri(R.raw.splash_animation)
+                val mediaItem = MediaItem.fromUri(rawUri)
+                setMediaItem(mediaItem)
+                repeatMode = Player.REPEAT_MODE_OFF
+                volume = 0f
+                prepare()
+                playWhenReady = true
+                addListener(object : Player.Listener {
+                    override fun onPlaybackStateChanged(state: Int) {
+                        if (state == Player.STATE_READY) {
+                            isVideoReady = true
+                        }
+                    }
+                })
+            } catch (e: Exception) {
+                // Fallback will render if video resource fails
+            }
+        }
+    }
+
+    DisposableEffect(splashPlayer) {
+        onDispose {
+            splashPlayer.stop()
+            splashPlayer.release()
+        }
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "SplashAnimation")
 
     val discRotation by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -79,7 +126,7 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         entranceAlpha.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing)
+            animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
         )
         entranceScale.animateTo(
             targetValue = 1f,
@@ -88,7 +135,7 @@ fun SplashScreen(
         delay(splashDurationMs)
         entranceAlpha.animateTo(
             targetValue = 0f,
-            animationSpec = tween(durationMillis = 400, easing = FastOutLinearInEasing)
+            animationSpec = tween(durationMillis = 350, easing = FastOutLinearInEasing)
         )
         onSplashFinished()
     }
@@ -104,14 +151,18 @@ fun SplashScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
         ) {
             Spacer(modifier = Modifier.weight(1f))
 
-            // Animated Rotating CD / Vinyl with Glowing Orbits
+            // Video Animation Container with Orbital Glow Backdrop
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(260.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
             ) {
                 // Background Ambient Glow & Orbit Rings
                 Canvas(
@@ -122,11 +173,11 @@ fun SplashScreen(
                     val center = Offset(size.width / 2f, size.height / 2f)
                     val maxRadius = size.minDimension / 2f
 
-                    // Outer orbit ring 1 (Cyan/Teal)
+                    // Outer orbit radial glow
                     drawCircle(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                CosmicTeal.copy(alpha = glowAlpha * 0.4f),
+                                CosmicTeal.copy(alpha = glowAlpha * 0.45f),
                                 Color.Transparent
                             ),
                             center = center,
@@ -150,27 +201,47 @@ fun SplashScreen(
                     )
                 }
 
-                // Spinning Vinyl CD Canvas
-                Canvas(
-                    modifier = Modifier.size(210.dp)
-                ) {
-                    val center = Offset(size.width / 2f, size.height / 2f)
-                    val discRadius = size.minDimension / 2f
+                // Custom Video Animation Player
+                AndroidView(
+                    factory = { ctx ->
+                        PlayerView(ctx).apply {
+                            player = splashPlayer
+                            useController = false
+                            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                            layoutParams = FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(24.dp))
+                )
 
-                    // Rotate the vinyl disc
-                    rotate(degrees = discRotation, pivot = center) {
-                        drawVinylDisc(center = center, radius = discRadius)
+                // Fallback Animated Spinning Vinyl CD if video is not yet ready
+                if (!isVideoReady) {
+                    Canvas(
+                        modifier = Modifier.size(200.dp)
+                    ) {
+                        val center = Offset(size.width / 2f, size.height / 2f)
+                        val discRadius = size.minDimension / 2f
+
+                        rotate(degrees = discRotation, pivot = center) {
+                            drawVinylDisc(center = center, radius = discRadius)
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // App Title & Branding
+            // App Title: "Sound Orbit"
             Text(
-                text = "SoundOrbit",
+                text = "Sound Orbit",
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    fontSize = 32.sp,
+                    fontSize = 34.sp,
                     letterSpacing = 2.sp
                 ),
                 fontWeight = FontWeight.ExtraBold,
@@ -249,7 +320,7 @@ fun SplashScreen(
 }
 
 private fun DrawScope.drawVinylDisc(center: Offset, radius: Float) {
-    // 1. Vinyl Body base (Dark Matte Sheen)
+    // 1. Vinyl Body base
     drawCircle(
         color = Color(0xFF14161A),
         radius = radius,
@@ -282,8 +353,8 @@ private fun DrawScope.drawVinylDisc(center: Offset, radius: Float) {
         )
     }
 
-    // 3. Specular Light Shimmer / Vinyl Reflection Sheen (Opposing light cones)
-    val sheenBrush1 = Brush.sweepGradient(
+    // 3. Specular Light Shimmer / Vinyl Reflection Sheen
+    val sheenBrush = Brush.sweepGradient(
         colors = listOf(
             Color.Transparent,
             Color.White.copy(alpha = 0.08f),
@@ -299,12 +370,12 @@ private fun DrawScope.drawVinylDisc(center: Offset, radius: Float) {
         center = center
     )
     drawCircle(
-        brush = sheenBrush1,
+        brush = sheenBrush,
         radius = radius * 0.94f,
         center = center
     )
 
-    // 4. Center Label Area (Colorful Orbit Theme)
+    // 4. Center Label Area
     val labelRadius = radius * 0.36f
     drawCircle(
         brush = Brush.linearGradient(
@@ -342,14 +413,12 @@ private fun DrawScope.drawVinylDisc(center: Offset, radius: Float) {
 
     // 5. Center Spindle Hole
     val spindleRadius = radius * 0.11f
-    // Chrome rim
     drawCircle(
         color = Color(0xFFD0D5DD),
         radius = spindleRadius,
         center = center,
         style = Stroke(width = 2.dp.toPx())
     )
-    // Dark hole
     drawCircle(
         color = OledBlack,
         radius = spindleRadius - 1.dp.toPx(),

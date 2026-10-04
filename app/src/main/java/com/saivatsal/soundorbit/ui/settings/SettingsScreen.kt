@@ -395,7 +395,7 @@ fun SettingsScreen(
 
             // About & Privacy
             item {
-                SettingsSectionHeader(title = "About SoundOrbit", icon = Icons.Default.Info)
+                SettingsSectionHeader(title = "About Sound Orbit", icon = Icons.Default.Info)
             }
 
             item {
@@ -414,7 +414,7 @@ fun SettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "SoundOrbit v${BuildConfig.VERSION_NAME}",
+                                text = "Sound Orbit v${BuildConfig.VERSION_NAME}",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
